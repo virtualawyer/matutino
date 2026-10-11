@@ -16,6 +16,21 @@ stories and pictures are stored when the paper is printed.
 |---|---|---|
 | ![Editions](docs/screenshots/editions.png) | ![Article](docs/screenshots/article.jpg) | ![Desk](docs/screenshots/desk.png) |
 
+## Why I built it
+
+For years my reading ran through Google Reader, then Instapaper and Pocket:
+clean, full-text articles I could read later on a tablet or e-reader, next to
+the newspapers I grew up with. Google Reader closed in 2013 and Pocket in 2025,
+and what replaced them came with a third party deciding what to surface, plus
+advertising.
+
+I wanted the parts I liked, under my own roof: a self-hosted replacement for a
+traditional newspaper combined with an RSS aggregator. The sources are the ones
+I choose, nothing is curated or ranked for me, there are no ads, and the result
+reads like a paper with a front page, sections and an end, rather than an
+endless feed. Matutino has no "save this page" button; the feeds you subscribe
+to arrive each morning as clean articles, in the browser and as an EPUB.
+
 ## What it does
 
 - **Your sections, your sources.** Paste feeds (or just site addresses) into
@@ -197,6 +212,32 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 the source to a Docker host over SSH, build the image there and start the
 container. `install.sh` finds a running Kavita container and its library
 folder by itself.
+
+## How it's built
+
+Matutino was written with [Claude Code](https://www.anthropic.com/claude-code),
+Anthropic's AI coding tool. Claude wrote the code, the tests and this
+documentation, working from my requirements: what the paper should look like,
+which sections it needs, how it should behave on a small home server. I made
+the design calls, tested each step, and run it on my own home server, where it
+prints my daily paper. Commits carry a `Co-Authored-By: Claude` line, which is
+why GitHub lists Claude as a contributor.
+
+How it's kept honest:
+
+- **84 automated tests** that need no network (a local test server plays every
+  outside site) run on every push: Python 3.10 to 3.13 with the libraries, and
+  3.9 and 3.13 without them. They cover feed parsing, the HTML cleaner, the
+  printing rules, the EPUB structure, the local-network guard, the password and
+  both languages; the pages' inline scripts are syntax-checked too.
+- **Real-world checks**: the feed packs were tested against the live sites, and
+  bugs found that way (accented addresses, Brotli-only servers, malformed feeds)
+  were fixed with a test that reproduces each one.
+- **A small footprint** on purpose: Python's standard library plus trafilatura,
+  Pillow, brotli and tzdata; SQLite; server-rendered pages with no JavaScript
+  framework and no build step.
+
+Issues and pull requests are welcome.
 
 ## License and credits
 
