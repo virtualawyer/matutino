@@ -1,0 +1,8 @@
+# Full-text article extraction. Without it Matutino prints what each feed carries.
+trafilatura==2.3.1
+# Some news CDNs send Brotli whatever the request asks for.
+brotli==1.2.0
+# Time zone data for zoneinfo (slim images ship none).
+tzdata==2026.5
+# Shrinks pictures before they are stored (the server's root disk is small).
+Pillow==12.3.0

@@ -1,0 +1,62 @@
+# Matutino feed pack: English, international.
+# 28 feeds, each one fetched, parsed and full-text extracted with Matutino's
+# honest User-Agent (October 2026). Lines with "headlines" print only what the
+# feed carries (no page fetch). Add your own city's paper under "# Local News".
+# Paste the whole file into the desk (Add feeds).
+
+# Front Page
+BBC News | https://feeds.bbci.co.uk/news/rss.xml
+The Guardian | https://www.theguardian.com/international/rss
+
+# Breaking News
+NPR News | https://feeds.npr.org/1001/rss.xml | headlines
+
+# World News
+BBC World | https://feeds.bbci.co.uk/news/world/rss.xml
+Al Jazeera | https://www.aljazeera.com/xml/rss/all.xml
+DW | https://rss.dw.com/rdf/rss-en-all
+
+# Business
+BBC Business | https://feeds.bbci.co.uk/news/business/rss.xml
+Guardian Business | https://www.theguardian.com/business/rss
+
+# Technology
+Ars Technica | https://arstechnica.com/feed/
+The Verge | https://www.theverge.com/rss/index.xml
+
+# Science
+ScienceDaily | https://www.sciencedaily.com/rss/top/science.xml
+Quanta Magazine | https://www.quantamagazine.org/feed/
+NASA | https://www.nasa.gov/feed/
+
+# Health
+STAT | https://www.statnews.com/feed/
+BBC Health | https://feeds.bbci.co.uk/news/health/rss.xml
+
+# Entertainment
+BBC Entertainment & Arts | https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml
+Variety | https://variety.com/feed/
+
+# Sports
+BBC Sport | https://feeds.bbci.co.uk/sport/rss.xml
+Guardian Sport | https://www.theguardian.com/sport/rss
+
+# Opinion
+Guardian Opinion | https://www.theguardian.com/commentisfree/rss
+The Conversation | https://theconversation.com/global/articles.atom
+
+# Variety
+Atlas Obscura | https://www.atlasobscura.com/feeds/latest
+Mental Floss | https://www.mentalfloss.com/rss.xml
+
+# Travel & Food
+Guardian Travel | https://www.theguardian.com/travel/rss
+
+# Weather
+# Atlantic hurricane outlooks; swap for your region's alerts.
+NHC Atlantic | https://www.nhc.noaa.gov/index-at.xml | headlines
+
+# Funnies
+xkcd | https://xkcd.com/rss.xml | headlines
+Saturday Morning Breakfast Cereal | https://www.smbc-comics.com/comic/rss | headlines
+Poorly Drawn Lines | https://poorlydrawnlines.com/feed/ | headlines

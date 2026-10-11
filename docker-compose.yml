@@ -1,0 +1,27 @@
+services:
+  matutino:
+    build: .
+    image: matutino:0.3.0
+    container_name: matutino
+    restart: unless-stopped
+    ports:
+      - "8771:8771"
+    volumes:
+      # The SQLite database. Keep it on a normal Linux filesystem (ext4, xfs...),
+      # never exFAT/FAT: SQLite needs file locking.
+      - ./data:/config
+      # Printed issues and their pictures, the bulk of the space. Any drive.
+      - ./issues:/issues
+      # Optional: your Kavita "Book" library folder, as the host sees it. Find it
+      # with: docker inspect -f '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{println}}{{end}}' kavita
+      # Matutino files every issue in one folder inside it. Remove this line and
+      # MATUTINO_EPUB_DIR below if you don't use Kavita.
+      - /path/to/kavita/books:/kavita
+    environment:
+      - TZ=Etc/UTC                     # your zone, e.g. America/New_York
+      - MATUTINO_ISSUES=/issues
+      - MATUTINO_EPUB_DIR=/kavita
+      # - MATUTINO_PASSWORD=change-me  # put the whole site behind a password
+    # Printing is bursty; this keeps it polite on a small home server.
+    cpus: 1.0
+    mem_limit: 512m

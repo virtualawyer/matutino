@@ -1,0 +1,96 @@
+# Matutino feed pack: Costa Rica and Puerto Rico, Spanish first.
+# 44 feeds across 20 sections, each one fetched, parsed and full-text extracted
+# with Matutino's honest User-Agent (October 2026). Lines with "headlines"
+# print only what the feed carries (no page fetch).
+#
+# The section lines add Costa Rica / Puerto Rico sections (Puerto Rico News,
+# Local Business, Real Estate...) to the paper's list if it does not have them;
+# rename or regroup them on the desk with "Edit as text".
+# No working Spanish-language comic feeds were found; the Funnies are English.
+# Paste the whole file into the desk (Add feeds).
+
+# Front Page
+El País América | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/america/portada
+BBC Mundo | https://feeds.bbci.co.uk/mundo/rss.xml
+
+# Breaking News
+La Nación (Costa Rica) | https://www.nacion.com/arc/outboundfeeds/rss/category/el-pais/?outputType=xml | headlines
+Europa Press | https://www.europapress.es/rss/rss.aspx | headlines
+
+# Local News
+La Voz de Guanacaste | https://vozdeguanacaste.com/feed/
+El Observador | https://observador.cr/feed/
+Semanario Universidad | https://semanariouniversidad.com/feed/
+The Tico Times | https://ticotimes.net/feed
+
+# World News
+El País Internacional | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/internacional/portada
+DW Español | https://rss.dw.com/rdf/rss-sp-all
+
+# Puerto Rico News
+El Nuevo Día | https://www.elnuevodia.com/arc/outboundfeeds/rss/?outputType=xml
+Metro Puerto Rico | https://www.metro.pr/arc/outboundfeeds/rss/?outputType=xml
+Centro de Periodismo Investigativo | https://periodismoinvestigativo.com/feed/
+
+# Opinion
+El País Opinión | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/opinion/portada
+La Nación Opinión | https://www.nacion.com/arc/outboundfeeds/rss/category/opinion/?outputType=xml
+The Conversation | https://theconversation.com/es/articles.atom
+
+# Local Business
+El Financiero | https://www.elfinancierocr.com/arc/outboundfeeds/rss/?outputType=xml
+La República | https://www.larepublica.net/feeds/feed.rss
+
+# Puerto Rico Business
+Sin Comillas | https://sincomillas.com/feed/
+El Nuevo Día Negocios | https://www.elnuevodia.com/arc/outboundfeeds/rss/category/negocios/?outputType=xml
+
+# International Business
+Bloomberg Línea | https://www.bloomberglinea.com/arc/outboundfeeds/rss/?outputType=xml
+El País Economía | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/economia/portada
+
+# Crypto & Markets
+DiarioBitcoin | https://www.diariobitcoin.com/feed/
+CoinDesk | https://www.coindesk.com/arc/outboundfeeds/rss/
+
+# Real Estate
+idealista | https://www.idealista.com/news/rss/v2/latest-news.xml
+
+# Entertainment
+El País Cultura | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/cultura/portada
+Espinof | https://www.espinof.com/feedburner.xml
+
+# Science
+El País Ciencia | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/ciencia/portada
+Muy Interesante | https://www.muyinteresante.com/feed
+
+# Technology
+Xataka | https://www.xataka.com/feedburner.xml
+El País Tecnología | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/tecnologia/portada
+
+# Health
+Infosalus | https://www.infosalus.com/rss/rss.aspx
+# (Infosalus sometimes answers "too many requests" to feed readers.)
+# Health
+El País Salud y Bienestar | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/salud-y-bienestar/portada
+
+# Variety
+Magnet | https://magnet.xataka.com/feedburner.xml
+Yorokobu | https://www.yorokobu.es/feed/
+
+# Travel & Food
+El Viajero | https://feeds.elpais.com/mrss-s/list/ep/site/elpais.com/section/elviajero
+Directo al Paladar | https://www.directoalpaladar.com/feedburner.xml
+
+# Weather
+Huracanes Pacífico (NHC) | https://www.nhc.noaa.gov/index-ep-sp.xml | headlines
+Huracanes Atlántico (NHC) | https://www.nhc.noaa.gov/index-at-sp.xml | headlines
+
+# Funnies
+xkcd | https://xkcd.com/rss.xml | headlines
+Poorly Drawn Lines | https://poorlydrawnlines.com/feed/ | headlines
+
+# Sports
+La Nación Puro Deporte | https://www.nacion.com/arc/outboundfeeds/rss/category/puro-deporte/?outputType=xml
+Infobae Deportes | https://www.infobae.com/arc/outboundfeeds/rss/category/deportes/?outputType=xml
+El Nuevo Día Deportes | https://www.elnuevodia.com/arc/outboundfeeds/rss/category/deportes/?outputType=xml

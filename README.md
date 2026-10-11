@@ -1,0 +1,211 @@
+# Matutino
+
+**Your own morning newspaper, printed from the feeds you choose.**
+*Tu propio periódico matutino, impreso con los feeds que tú eliges.*
+
+Matutino is a small self-hosted app that reads the RSS/Atom feeds you pick,
+fetches each story's full text, and every morning prints a newspaper: a
+classic broadsheet you read in any browser on your network, and an EPUB for
+your e-reader or Kavita library. No algorithm decides what you see, nothing
+is personalised, and reading the paper never contacts the outside world: the
+stories and pictures are stored when the paper is printed.
+
+![Front page](docs/screenshots/front.jpg)
+
+| Editions | An article | The desk |
+|---|---|---|
+| ![Editions](docs/screenshots/editions.png) | ![Article](docs/screenshots/article.jpg) | ![Desk](docs/screenshots/desk.png) |
+
+## What it does
+
+- **Your sections, your sources.** Paste feeds (or just site addresses) into
+  the desk and file them under sections: Front Page, Local News, World,
+  Business, Science, Sports, Funnies... The list and its order are yours.
+- **Full stories.** Each article is extracted from its page
+  ([trafilatura](https://github.com/adbar/trafilatura)), cleaned to safe HTML,
+  and its pictures saved and scaled down. If a page can't be read, the feed's
+  own text is printed and marked as an excerpt.
+- **A real front page.** A lead story and a column of top stories, a red
+  *Breaking* band, a weather box and *On this day*, then each section in its own
+  grid. A night edition follows your system's dark mode.
+- **Editions.** Every issue is kept (14 days by default) and shown as a
+  miniature of its own front page.
+- **EPUB.** Each issue is also bound as an EPUB 3 book, with series metadata,
+  so Kavita lists one series with an issue per day. The paper's download link
+  works with any e-reader.
+- **English or Spanish.** The paper's own words (dates, labels, weather)
+  follow the Language setting; stories print in their feeds' language.
+- **Small.** Python and a handful of libraries, one container, no database
+  server; it runs comfortably in a container capped at 512 MB of memory.
+
+## Quick start (Docker)
+
+```
+docker build -t matutino .
+docker run -d --name matutino --restart unless-stopped -p 8771:8771 \
+  -v /opt/matutino:/config -e TZ=Europe/Madrid matutino
+```
+
+Or skip the build and use the image published with each release
+(`linux/amd64` and `linux/arm64`): `ghcr.io/virtualawyer/matutino:latest`.
+
+Open `http://<server>:8771/desk`, paste a feed pack from [`docs/feeds/`](docs/feeds)
+(or your own feeds), and click **Print now**. The paper is at
+`http://<server>:8771/`. It prints itself every day at the time set on the desk
+(05:15 by default).
+
+With Kavita, and the printed issues on a bigger drive, use
+[`docker-compose.yml`](docker-compose.yml):
+
+| Volume | What | Where to put it |
+|---|---|---|
+| `/config` | the SQLite database (small) | a normal Linux filesystem, **not** exFAT/FAT: SQLite needs file locking |
+| `/issues` | printed issues and their pictures (tens of MB a day) | any drive, exFAT is fine |
+| `/kavita` | your Kavita *Book* library folder | Matutino files each EPUB in one folder inside it |
+
+Without Docker: `pip install -r requirements.txt`, then
+`python -m matutino --data ./data`. Python 3.9 or newer; without the
+requirements it still runs and prints each feed's own text.
+
+### Settings in the environment
+
+| Variable | Default | |
+|---|---|---|
+| `MATUTINO_DATA` | `data` (`/config` in Docker) | database folder |
+| `MATUTINO_ISSUES` | `<data>/issues` | printed issues; may be another drive |
+| `MATUTINO_EPUB_DIR` | none | Kavita library folder to file EPUBs in (`/kavita` in the compose file) |
+| `MATUTINO_PORT`, `MATUTINO_HOST` | `8771`, `0.0.0.0` | |
+| `MATUTINO_PASSWORD` | none | put the whole site behind a password (any user name) |
+| `MATUTINO_ALLOW_PRIVATE` | off | let article pages and pictures come from local-network addresses |
+| `TZ` | `UTC` | default time zone for the paper (also settable on the desk) |
+
+Everything else (paper name, sections, print time, weather place, language,
+stories per feed, how long to keep issues) is on the desk.
+
+## Sections
+
+One per line on the desk, in printing order. A few have jobs, which follow the
+name (so "Comics" works like Funnies):
+
+- **Front Page**: its feeds supply the lead story and the right-hand column.
+  Without Front Page feeds, the top story of each news section is used.
+- **Breaking News**: printed as a red band under the masthead.
+- **Weather**: carries a forecast box (today plus three days) from
+  [Open-Meteo](https://open-meteo.com). Set the place on the desk ("Town,
+  Country"); there is no weather until you do.
+- **Variety**: carries *On this day* from Wikipedia, in the paper's language.
+- **Funnies** and **Opinion** never lead the paper.
+
+## Adding feeds
+
+```
+# World News
+https://feeds.bbci.co.uk/news/world/rss.xml
+Al Jazeera | https://www.aljazeera.com/xml/rss/all.xml
+# Funnies
+xkcd | https://xkcd.com/rss.xml | headlines
+('SMBC', 'https://www.smbc-comics.com/comic/rss', 'feed'),
+```
+
+A `# Name` line starts a section (`# World` and `# Sports` find their sections
+on the list; unknown names become new sections). Longer `#` lines are
+comments, and a `#` in front of a feed switches it off. `headlines` after an
+address prints only what the feed carries, which suits comics and link lists.
+Site addresses work too; their feed is found for you. **Edit as text** on the
+desk shows the whole list in this format.
+
+Two tested packs are included: [English](docs/feeds/english.txt) and
+[Costa Rica / Puerto Rico, Spanish first](docs/feeds/espanol-costa-rica-puerto-rico.txt).
+
+## How a paper is printed
+
+1. Every feed is read. From each, up to *stories per feed* (default 5) **new**
+   stories are taken: not printed before, and published since the previous
+   issue (at least the last 36 hours; a newly added feed reaches back a week).
+2. Each story's page is fetched and its article extracted; pictures are
+   downloaded, scaled to 1400 px and stored with the issue.
+3. The issue is assembled in a temporary folder and swapped in only when
+   complete, then bound as an EPUB, copied to Kavita, and old issues pruned.
+4. Printing again on the same day reprints that day's issue in full.
+
+A failed or empty scheduled print is retried every 30 minutes, at most four
+times a day. Below 300 MB of free space the paper prints without pictures.
+
+## Kavita and unplugged drives
+
+Matutino leaves a marker file in its library folder and in its Kavita folder.
+If it has written there before and the marker is gone, the drive is almost
+certainly not mounted (common with USB drives at boot): the paper refuses to
+print into the empty mount point rather than filling the system disk, and the
+desk says why. Restart the container once the drive is back.
+
+## Security
+
+Matutino is built for a home network.
+
+- **No accounts.** Set `MATUTINO_PASSWORD` to require a password for the whole
+  site. Don't expose it to the internet without HTTPS in front (a reverse proxy
+  such as Caddy or Traefik) and a password.
+- **Feeds are untrusted.** Story HTML goes through an allowlist cleaner and is
+  served with a strict Content-Security-Policy. Article pages and pictures may
+  not point into your local network, checked on every redirect, so a hostile
+  feed can't make Matutino probe your router. Feeds you add yourself may be
+  local.
+- **Changes need JSON.** The desk's actions only accept `application/json`, so
+  another website can't submit them through your browser.
+
+## Using it responsibly
+
+Matutino is a personal reader: it prints the stories you subscribed to, for
+you. Please keep it that way.
+
+- It identifies itself honestly (`Matutino/<version>`). Some news sites refuse
+  anything that isn't a browser; the desk's **Identify as a web browser** switch
+  lets you decide whether to present as one.
+- It reads only what a page serves publicly. It doesn't log in or get around
+  paywalls; for paywalled sites you get the feed's excerpt and a link.
+- Don't republish what it prints. Publishers' articles and pictures remain
+  theirs.
+
+## Develop
+
+```
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python -m matutino --data data --epub-dir data/kavita   # http://localhost:8771
+.venv/bin/python -m matutino --data data --print-now              # one issue, then exit
+.venv/bin/python tests/run.py                                     # no network needed
+```
+
+| Module | Job |
+|---|---|
+| `fetch.py` | one GET: size caps, gzip/Brotli, User-Agent, local-network guard |
+| `feeds.py` | RSS/Atom/RDF parsing, feed discovery, paste parsing |
+| `sanitize.py` | allowlist HTML to well-formed XHTML |
+| `extract.py` | trafilatura wrapper |
+| `images.py` | picture scaling and re-encoding (Pillow) |
+| `build.py` | picks, fetches, stores, binds and files an issue; pruning |
+| `epub.py` | EPUB 3 writer (+NCX) with series metadata |
+| `boxes.py` | weather (Open-Meteo) and On this day (Wikipedia) |
+| `sections.py` | section list, section jobs, name matching |
+| `i18n.py` | the paper's words in English and Spanish |
+| `render.py` | the paper: front page, articles, editions |
+| `desk.py` | the desk page |
+| `server.py` | HTTP, JSON API, scheduler |
+| `db.py` | SQLite: settings, feeds, issues, printed stories |
+
+`deploy.sh` (run on your computer) and `install.sh` (run on the server) copy
+the source to a Docker host over SSH, build the image there and start the
+container. `install.sh` finds a running Kavita container and its library
+folder by itself.
+
+## License and credits
+
+Matutino is free software under the [GNU Affero General Public License
+v3.0](LICENSE) or later. If you run a modified version for others over a
+network, you must offer them its source.
+
+Built on [trafilatura](https://github.com/adbar/trafilatura) (Apache-2.0),
+[Pillow](https://python-pillow.org) (MIT-CMU), [brotli](https://github.com/google/brotli)
+(MIT) and [lxml](https://lxml.de) (BSD). Weather data by
+[Open-Meteo](https://open-meteo.com) (CC BY 4.0); *On this day* from
+[Wikipedia](https://www.wikipedia.org) (CC BY-SA 4.0).
