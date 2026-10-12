@@ -7,7 +7,7 @@ then re-fetch the state rather than patching the page from responses.
 import html
 
 from . import PROJECT_URL, i18n
-from .render import CSS, MOON, THEME_JS, TOGGLE_JS
+from .render import CSS, HEAD_ICONS, MOON, THEME_JS, TOGGLE_JS
 
 DESK_CSS = r"""
 .desk{max-width:860px;margin:0 auto}
@@ -87,7 +87,7 @@ select option{background:var(--paper);color:var(--ink)}
 
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="color-scheme" content="light dark"><title>The Desk</title>
+<meta name="color-scheme" content="light dark"><title>The Desk</title>__ICONS__
 <style>__CSS__</style>__THEME__</head><body><div class="page desk">
 <div class="strip label"><span>Matutino __VERSION__ &middot; __SOURCE__</span><nav><a href="/">Today</a><a href="/archive">Editions</a>
 <button class="theme" type="button" title="Night edition" aria-label="Toggle night edition">__MOON__</button></nav></div>
@@ -162,6 +162,7 @@ xkcd | https://xkcd.com/rss.xml | headlines"></textarea>
   <div class="row"><label class="check"><input type="checkbox" id="s_schedule_on"> Print automatically every day</label>
     <span style="flex:1"></span><button class="btn" id="saveset">Save settings</button></div>
   <p class="hint" id="kavita"></p>
+  <p class="hint" id="opds"></p>
   <div class="msg" id="setmsg"></div>
   <datalist id="zones"><option>UTC</option><option>Europe/London</option><option>Europe/Madrid</option>
   <option>America/New_York</option><option>America/Chicago</option><option>America/Los_Angeles</option>
@@ -177,6 +178,8 @@ __TOGGLE__
 var S=null, editing=false, timer=null;
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+$('opds').innerHTML='Reading apps (Librera, Readest, KOReader) can subscribe to the paper: add <code>'+esc(location.origin+'/opds')+
+  '</code> as an OPDS catalog and every new issue appears there as an EPUB.';
 function post(url,body){return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})})
   .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j})})}
 function ago(ts){if(!ts)return'';var s=Math.max(0,S.now-ts);if(s<90)return'just now';if(s<5400)return Math.round(s/60)+' min ago';
@@ -287,7 +290,7 @@ load();
 def page(version):
     source = ('<a href="%s" rel="noopener noreferrer">free software (AGPL) &middot; source</a>' % PROJECT_URL
               if PROJECT_URL else "free software (AGPL)")
-    return (PAGE.replace("__CSS__", CSS + DESK_CSS).replace("__THEME__", THEME_JS)
+    return (PAGE.replace("__CSS__", CSS + DESK_CSS).replace("__THEME__", THEME_JS).replace("__ICONS__", HEAD_ICONS)
             .replace("__TOGGLE__", TOGGLE_JS).replace("__MOON__", MOON).replace("__VERSION__", version)
             .replace("__SOURCE__", source).replace("__LANGS__", "".join(
                 '<option value="%s">%s (%s)</option>' % (html.escape(c), html.escape(n), html.escape(c))

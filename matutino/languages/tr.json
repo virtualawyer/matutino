@@ -53,7 +53,11 @@
   "only_excerpt": "Yayıncının akışında yalnızca bu özet var.",
   "sun_times": "Gün doğumu %s, gün batımı %s. Open-Meteo, baskı saatinde.",
   "forecast_for": "%s için hava tahmini",
-  "otd_title": "Tarihte bugün, %s"
+  "otd_title": "Tarihte bugün, %s",
+  "install": "Ana ekrana ekle",
+  "install_ios": "Paylaş düğmesine, ardından Ana Ekrana Ekle'ye dokunun.",
+  "install_other": "Tarayıcı menüsünü açıp Yükle veya Ana ekrana ekle'yi seçin.",
+  "ok": "Tamam"
  },
  "days": [
   "Pazartesi",

@@ -1,0 +1,86 @@
+name: desktop apps
+
+# Builds the macOS and Windows apps (unsigned) and attaches them to the
+# release of the tag. Run it by hand to try a build without releasing.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            label: macOS-AppleSilicon
+          - os: macos-15-intel
+            label: macOS-Intel
+          - os: windows-latest
+            label: Windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install
+        working-directory: desktop
+        run: pip install -r requirements.txt
+      - name: Test
+        run: python tests/run.py
+      - name: Bundle
+        run: pyinstaller --noconfirm desktop/matutino.spec
+      - name: Check the bundle (macOS)
+        if: runner.os == 'macOS'
+        run: dist/Matutino.app/Contents/MacOS/Matutino --check
+      - name: Check the bundle (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:MATUTINO_CHECK_LOG = "$PWD\check.log"
+          $p = Start-Process -FilePath dist\Matutino\Matutino.exe -ArgumentList "--check" -Wait -PassThru
+          Get-Content check.log
+          if ($p.ExitCode -ne 0) { exit 1 }
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          V=$(python -c "import matutino; print(matutino.VERSION)")
+          ditto -c -k --keepParent dist/Matutino.app "Matutino-$V-${{ matrix.label }}.zip"
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $v = python -c "import matutino; print(matutino.VERSION)"
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DVersion=$v" desktop\windows.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          Compress-Archive -Path dist\Matutino -DestinationPath "Matutino-$v-Windows-portable.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.label }}
+          path: |
+            Matutino-*.zip
+            Matutino-*-Setup.exe
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "Matutino ${GITHUB_REF_NAME#v}" --notes "See CHANGELOG.md."
+          gh release upload "$GITHUB_REF_NAME" out/* --repo "$GITHUB_REPOSITORY" --clobber

@@ -53,7 +53,11 @@
   "only_excerpt": "O feed do veículo traz apenas este trecho.",
   "sun_times": "Nascer do sol %s, pôr do sol %s. Open-Meteo, no fechamento.",
   "forecast_for": "Previsão para %s",
-  "otd_title": "Neste dia, %s"
+  "otd_title": "Neste dia, %s",
+  "install": "Adicionar à tela de início",
+  "install_ios": "Toque no botão Compartilhar e depois em Adicionar à Tela de Início.",
+  "install_other": "Abra o menu do navegador e escolha Instalar ou Adicionar à tela inicial.",
+  "ok": "OK"
  },
  "days": [
   "segunda-feira",

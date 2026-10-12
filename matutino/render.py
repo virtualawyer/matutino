@@ -52,7 +52,12 @@ img{display:block;max-width:100%;height:auto}
 .strip{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0 0;color:var(--muted)}
 .strip nav{display:flex;gap:18px;align-items:center}
 .strip a:hover{color:var(--ink)}
-.theme{background:none;border:0;color:inherit;cursor:pointer;padding:4px;font:inherit;line-height:1}
+.theme,.install{background:none;border:0;color:inherit;cursor:pointer;padding:4px;font:inherit;line-height:1}
+.strip{position:relative}
+.install-tip{position:absolute;inset-inline-end:0;top:calc(100% + 6px);z-index:5;max-width:300px;padding:14px 16px;
+  background:var(--paper);color:var(--ink);border:1px solid var(--rule);box-shadow:0 8px 24px rgba(0,0,0,.14);
+  font:400 15px/1.45 var(--body);letter-spacing:0;text-transform:none}
+.install-tip p{margin:0 0 10px}
 .mast{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr);align-items:end;
   gap:20px;padding:18px 0 14px}
 .mast h1{margin:0;text-align:center;font-family:var(--mast);font-weight:700;letter-spacing:-.01em;
@@ -341,18 +346,44 @@ var r=document.documentElement,cur=r.getAttribute('data-theme')||(matchMedia('(p
 nx=cur==='dark'?'light':'dark';r.setAttribute('data-theme',nx);try{localStorage.setItem('pb-theme',nx)}catch(e){}})});
 document.addEventListener('keydown',function(e){if(e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA/.test(e.target.tagName))return;
 var a=document.querySelector(e.key==='ArrowLeft'?'a[rel=prev]':e.key==='ArrowRight'?'a[rel=next]':null);if(a)location.href=a.href});
+(function(){var b=document.querySelector('.install'),tip=document.querySelector('.install-tip'),ask=null;
+if(!b||matchMedia('(display-mode: standalone)').matches||navigator.standalone)return;
+addEventListener('beforeinstallprompt',function(e){e.preventDefault();ask=e});
+addEventListener('appinstalled',function(){b.hidden=tip.hidden=true});
+b.hidden=false;
+b.addEventListener('click',function(){if(ask){ask.prompt();ask=null;return}
+var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+tip.querySelector('p').textContent=ios?tip.getAttribute('data-ios'):tip.getAttribute('data-other');tip.hidden=!tip.hidden});
+tip.querySelector('button').addEventListener('click',function(){tip.hidden=true})})();
 </script>"""
+
+HOME = ('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">'
+        '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 8.5v7M8.5 12h7"/></svg>')
 
 MOON = ('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">'
         '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>')
 
 
-def doc(title, body, desc="", lang="en"):
+# The icon and web-app manifest let a phone keep the paper on its home screen.
+HEAD_ICONS = ('<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">'
+              '<link rel="icon" href="/static/favicon-32.png" sizes="32x32" type="image/png">'
+              '<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">')
+
+
+def doc(title, body, desc="", lang="en", paper=""):
+    app = ""
+    if paper:  # the name under the home-screen icon
+        app = ('<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">'
+               '<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">'
+               '<meta name="apple-mobile-web-app-title" content="%s">'
+               '<meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">'
+               '<meta name="theme-color" content="#131210" media="(prefers-color-scheme: dark)">' % E(paper))
     return ("<!doctype html><html lang=\"%s\"%s><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">"
             "<meta name=\"color-scheme\" content=\"light dark\">"
-            "<title>%s</title>%s<style>%s</style>%s</head><body><div class=\"page\" id=\"top\">%s</div>%s</body></html>"
-            % (i18n.lang_of(lang), ' dir="rtl"' if i18n.direction(lang) == "rtl" else "", E(title), "<meta name=\"description\" content=\"%s\">" % E(desc) if desc else "",
+            "<title>%s</title>%s%s%s<style>%s</style>%s</head><body><div class=\"page\" id=\"top\">%s</div>%s</body></html>"
+            % (i18n.lang_of(lang), ' dir="rtl"' if i18n.direction(lang) == "rtl" else "", E(title),
+               "<meta name=\"description\" content=\"%s\">" % E(desc) if desc else "", HEAD_ICONS, app,
                CSS, THEME_JS, body, TOGGLE_JS))
 
 
@@ -360,8 +391,12 @@ def strip(left="", lang="en"):
     L = i18n.strings(lang)
     return ('<div class="strip label"><span class="date">%s</span><nav><a href="/">%s</a>'
             '<a href="/archive">%s</a><a href="/desk">%s</a>'
-            '<button class="theme" type="button" title="%s" aria-label="%s">%s</button>'
-            '</nav></div>' % (E(left), L["today"], L["editions"], L["desk"], L["night"], L["night"], MOON))
+            '<button class="install" type="button" hidden title="%s" aria-label="%s">%s</button>'
+            '<button class="theme" type="button" title="%s" aria-label="%s">%s</button></nav>'
+            '<div class="install-tip" role="dialog" hidden data-ios="%s" data-other="%s"><p></p>'
+            '<button type="button" class="btn">%s</button></div></div>'
+            % (E(left), L["today"], L["editions"], L["desk"], E(L["install"]), E(L["install"]), HOME,
+               L["night"], L["night"], MOON, E(L["install_ios"]), E(L["install_other"]), E(L["ok"])))
 
 
 def _when(ts, zone):
@@ -604,7 +639,8 @@ def front_page(issue, zone):
                % (L["printed_by"] % hour(issue["built_at"], zone, lang), _source_link(L), L["back_top"], date,
                   L["download_epub"], L["all_editions"]))
     return doc("%s — %s" % (issue["paper"], day), "".join(out),
-               "%s, %s" % (re.sub("<[^>]+>", "", L["no"] % issue["number"]), L["n_stories"] % total), lang)
+               "%s, %s" % (re.sub("<[^>]+>", "", L["no"] % issue["number"]), L["n_stories"] % total), lang,
+               issue["paper"])
 
 
 def cover(issue):
@@ -688,7 +724,7 @@ def article_page(issue, st, zone):
                '<a rel="next" href="/issue/%s/"><span class="label">%s <span class="arw">&rarr;</span></span><div class="hl">%s</div></a>'
                % (date, L["back_front"], L["end_paper"]))
     out.append("</nav>")
-    return doc("%s — %s" % (st["title"], issue["paper"]), "".join(out), st["summary"], lang)
+    return doc("%s — %s" % (st["title"], issue["paper"]), "".join(out), st["summary"], lang, issue["paper"])
 
 
 def archive_page(editions, paper, lang="en"):
@@ -712,7 +748,7 @@ def archive_page(editions, paper, lang="en"):
                           E(i18n.day_month(row["date"], il)), L["no"] % row["number"],
                           L["n_stories"] % row["stories"], row["date"]))
         out.append("</div>")
-    return doc("%s — %s" % (paper, L["editions"]), "".join(out), "", lang)
+    return doc("%s — %s" % (paper, L["editions"]), "".join(out), "", lang, paper)
 
 
 def empty_page(paper, building=False, lang="en"):
@@ -722,7 +758,7 @@ def empty_page(paper, building=False, lang="en"):
            '<div class="dateline label"><span>%s</span></div>' % L["awaiting"],
            '<div class="empty"><p>%s</p><p><a class="btn" href="/desk">%s</a></p></div>'
            % (L["running"] if building else L["no_issue"], L["go_desk"])]
-    return doc(paper, "".join(out), "", lang)
+    return doc(paper, "".join(out), "", lang, paper)
 
 
 def not_found_page(lang="en"):

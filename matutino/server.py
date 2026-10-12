@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
-from . import VERSION, boxes, build, desk, epub, extract, feeds, fetch, i18n, images, render
+from . import VERSION, boxes, build, desk, epub, extract, feeds, fetch, i18n, images, opds, render
 from . import sections as sec_mod
 from .build import Builder, tz, local_date
 from .db import DB, DEFAULTS
@@ -22,7 +22,7 @@ from .epub import long_date
 
 MAX_BODY = 512 * 1024
 CSP = ("default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; "
-       "script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; "
+       "script-src 'unsafe-inline'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; "
        "form-action 'none'; frame-ancestors 'none'")
 DATE = r"(\d{4}-\d{2}-\d{2})"
 ISSUE_RE = re.compile(r"^/issue/%s/?$" % DATE)
@@ -32,6 +32,10 @@ EPUB_RE = re.compile(r"^/issue/%s/epub$" % DATE)
 FEED_RE = re.compile(r"^/api/feeds/(\d+)$")
 FEED_DEL_RE = re.compile(r"^/api/feeds/(\d+)/delete$")
 IMG_TYPES = {"jpg": "image/jpeg", "png": "image/png", "gif": "image/gif", "webp": "image/webp"}
+# Icons for browsers and home screens: public, so a password never hides them.
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+STATIC = {"/static/" + n: {"svg": "image/svg+xml", "png": "image/png"}[n.rsplit(".", 1)[1]]
+          for n in (os.listdir(STATIC_DIR) if os.path.isdir(STATIC_DIR) else []) if n.rsplit(".", 1)[-1] in ("svg", "png")}
 RETRY_GAP = 1800
 MAX_TRIES = 4
 
@@ -93,6 +97,9 @@ class App(object):
         self.builder = Builder(self.db, data_dir, epub_dir, issues_dir)
         fetch.use_browser_ua(self.db.settings()["browser_ua"])
         self._cache = {}
+        # Host names the server answers to; None = any. The desktop app sets
+        # its own loopback names so a web page can't reach it by DNS tricks.
+        self.allowed_hosts = None
 
     # issues
     def issue(self, date):
@@ -104,7 +111,7 @@ class App(object):
         hit = self._cache.get(date)
         if hit and hit[0] == mtime:
             return hit[1]
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         self._cache[date] = (mtime, data)
         return data
@@ -366,6 +373,10 @@ class Handler(BaseHTTPRequestHandler):
     def _404(self):
         self._send(404, render.not_found_page(self.app.db.settings()["language"]))
 
+    def _host_ok(self):
+        hosts = self.app.allowed_hosts
+        return hosts is None or (self.headers.get("Host") or "").lower() in hosts
+
     def _authorized(self):
         if not self.app.password:
             return True
@@ -394,8 +405,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         app = self.app
         path = urlsplit(self.path).path
+        if not self._host_ok():
+            return self._send(421, "wrong host", "text/plain; charset=utf-8")
         if path == "/healthz":  # for Docker's health check; never behind the password
             return self._send(200, "ok", "text/plain; charset=utf-8")
+        if path in STATIC:
+            with open(os.path.join(STATIC_DIR, path[8:]), "rb") as f:
+                return self._send(200, f.read(), STATIC[path], {"Cache-Control": "public, max-age=86400"})
         if not self._authorized():
             return self._challenge()
         s = app.db.settings()
@@ -414,6 +430,12 @@ class Handler(BaseHTTPRequestHandler):
                 [(r, named(app.issue(r["date"]))) for r in app.db.issues() if app.issue(r["date"])], s["paper_name"], lang))
         if path == "/api/state":
             return self._json(200, app.state())
+        if path == "/manifest.webmanifest":
+            return self._send(200, opds.manifest(s["paper_name"], lang), "application/manifest+json")
+        if path == "/opds":
+            eds = [(r, app.issue(r["date"])) for r in app.db.issues()]
+            return self._send(200, opds.catalog(s["paper_name"], [(r, i) for r, i in eds if i]),
+                              opds.ACQ + ";charset=utf-8", {"Cache-Control": "no-cache"})
         m = ISSUE_RE.match(path)
         if m:
             if not path.endswith("/"):
@@ -458,6 +480,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlsplit(self.path).path
+        if not self._host_ok():
+            return self._json(421, {"error": "wrong host"})
         if not self._authorized():
             return self._challenge()
         # JSON only: a plain cross-site <form> cannot send this content type,

@@ -53,7 +53,11 @@
   "only_excerpt": "Feed izdavača sadrži samo ovaj odlomak.",
   "sun_times": "Izlazak sunca %s, zalazak %s. Open-Meteo, u trenutku štampe.",
   "forecast_for": "Prognoza za %s",
-  "otd_title": "Na današnji dan, %s"
+  "otd_title": "Na današnji dan, %s",
+  "install": "Dodaj na početni ekran",
+  "install_ios": "Dodirnite dugme Dijeli, pa Dodaj na početni ekran.",
+  "install_other": "Otvorite meni preglednika i izaberite Instaliraj ili Dodaj na početni ekran.",
+  "ok": "U redu"
  },
  "days": [
   "ponedjeljak",

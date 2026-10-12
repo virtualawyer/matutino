@@ -5,3 +5,8 @@ __pycache__/
 dist/
 .DS_Store
 issues/
+.venv-desktop/
+build/
+Matutino-*.zip
+Matutino-*-Setup.exe
+check.log

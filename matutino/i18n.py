@@ -45,6 +45,8 @@ STRINGS = {
         "only_excerpt": "The publisher’s feed carries only this excerpt.",
         "sun_times": "Sunrise %s, sunset %s. Open-Meteo, at press time.",
         "forecast_for": "Forecast for %s", "otd_title": "On this day, %s",
+        "install": "Add to home screen", "install_ios": "Tap the Share button, then Add to Home Screen.",
+        "install_other": "Open your browser's menu and choose Install or Add to Home screen.", "ok": "OK",
     },
     "es": {
         "today": "Hoy", "editions": "Ediciones", "desk": "Redacción", "night": "Edición nocturna",
@@ -71,6 +73,9 @@ STRINGS = {
         "only_excerpt": "El feed del medio solo trae este extracto.",
         "sun_times": "Amanecer %s, atardecer %s. Open-Meteo, al cierre de edición.",
         "forecast_for": "Pronóstico para %s", "otd_title": "Tal día como hoy, %s",
+        "install": "Añadir a la pantalla de inicio",
+        "install_ios": "Toca el botón Compartir y elige la opción de añadir a la pantalla de inicio.",
+        "install_other": "Abre el menú del navegador y elige Instalar o Añadir a la pantalla de inicio.", "ok": "Entendido",
     },
 }
 

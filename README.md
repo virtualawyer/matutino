@@ -55,8 +55,59 @@ to arrive each morning as clean articles, in the browser and as an EPUB.
   French, Portuguese, Italian, Swedish, Russian, Ukrainian, Bosnian, Turkish,
   Arabic (laid out right to left) and Chinese, the languages Wikipedia
   publishes *On this day* in. Stories print in their feeds' language.
+- **On your home screen.** The paper installs like an app on a phone, tablet
+  or computer, with its own icon and your paper's name under it.
+- **In your e-book reader.** Reading apps that browse OPDS catalogs (Librera,
+  Readest, KOReader) subscribe to the paper once; each new issue arrives in
+  them as an EPUB.
+- **On a server or on your computer.** Run it in Docker on a home server, or
+  download the Mac or Windows app, which keeps the paper in the menu bar.
 - **Small.** Python and a handful of libraries, one container, no database
   server; it runs comfortably in a container capped at 512 MB of memory.
+
+## Desktop app (Mac and Windows)
+
+No server needed: download the app from the
+[latest release](https://github.com/virtualawyer/matutino/releases/latest).
+
+| Computer | Download |
+|---|---|
+| Mac with Apple silicon (M1 or later) | `Matutino-<version>-macOS-AppleSilicon.zip` |
+| Mac with an Intel processor | `Matutino-<version>-macOS-Intel.zip` |
+| Windows 10 or 11, 64-bit | `Matutino-<version>-Windows-Setup.exe` (or the portable `.zip`) |
+
+The apps aren't signed (signing costs a yearly fee, and Matutino is free), so
+your computer warns you the first time:
+
+- **Mac:** unzip, drag Matutino into Applications and open it. macOS says it
+  could not verify the app; click **Done**. Open **System Settings > Privacy &
+  Security**, scroll to the message about Matutino, click **Open Anyway** and
+  then **Open**. You do this once. (On macOS 14 or older, Control-click the app
+  and choose **Open** instead. From Terminal:
+  `xattr -dr com.apple.quarantine /Applications/Matutino.app`.)
+- **Windows:** run the Setup file. If SmartScreen says **Windows protected your
+  PC**, click **More info**, then **Run anyway**. It installs for your user
+  only (no administrator password) and offers to open Matutino when you sign in.
+
+Then:
+
+- Matutino lives in the menu bar (Mac, the **M.** icon) or the notification
+  area (Windows; it may be behind the **^** arrow). Its menu opens the paper
+  and the desk, prints now, shows the EPUB folder, and switches **Open at
+  login** on or off.
+- The first time, the desk opens: paste some feeds and click **Print now**. A
+  new paper follows your computer's time zone and language.
+- It prints at the time set on the desk while the computer is on. If the
+  computer was asleep or off, it prints as soon as Matutino runs again, so
+  leave **Open at login** on.
+- The paper opens in your browser at `http://127.0.0.1:8771` and answers only
+  on this computer.
+- Each issue's EPUB is saved in **Documents/Matutino**. The database and issues
+  live in `~/Library/Application Support/Matutino` (Mac) or
+  `%LOCALAPPDATA%\Matutino` (Windows), with a log in `matutino.log`.
+- To remove it, switch **Open at login** off and quit from its menu, then
+  delete the app (Mac) or uninstall it in **Settings > Apps** (Windows). Delete
+  the data folder too if you want the issues gone.
 
 ## Quick start (Docker)
 
@@ -101,6 +152,68 @@ requirements it still runs and prints each feed's own text.
 
 Everything else (paper name, sections, print time, weather place, language,
 stories per feed, how long to keep issues) is on the desk.
+
+## On your home screen
+
+The paper can sit on your home screen like an app: its own icon, your paper's
+name, no browser bars. Tap the phone icon in the paper's top strip (next to the
+moon); it installs the paper where the browser allows that, or says how:
+
+- **iPhone and iPad:** in Safari, tap **Share**, then **Add to Home Screen**.
+- **Android:** in Chrome, open the menu and choose **Add to Home screen** or
+  **Install**.
+- **Mac and Windows:** Chrome and Edge show an install button in the address
+  bar.
+
+Browsers install web apps fully only from `https://` addresses (and from the
+desktop app's own `127.0.0.1`). On a plain `http://` address on your home
+network, Android and computer browsers add a shortcut that opens in the
+browser instead; iPhone and iPad add the icon either way.
+
+## Reading on a phone or tablet
+
+There's no Matutino phone app: a good e-book reader does that job better. Each
+issue is an EPUB, and the paper publishes an **OPDS catalog** of its issues, the
+format e-book readers use to browse libraries. Add it once and every morning's
+issue shows up in the reader, newest first.
+
+The catalog's address is on the desk: `http://<server>:8771/opds`. Your phone
+has to reach the server: on your home Wi-Fi, or away from home through a VPN
+into your network (WireGuard, Tailscale).
+
+**Android: [Librera Reader](https://librera.mobi)**
+
+1. Install Librera from Google Play (the F-Droid build has been reported to
+   leave out online catalogs).
+2. Open the **Networks** tab and tap **+**.
+3. Enter the catalog address and a name (your paper's name, say) and tap
+   **ADD**.
+4. Tap the catalog to see the issues; tap one to download and open it.
+
+Librera's catalog dialog has no password field: if your paper has a password
+(`MATUTINO_PASSWORD`), use Readest.
+
+**iPhone, iPad and Android: [Readest](https://readest.com)** (free and open
+source; also on Mac, Windows and Linux)
+
+1. In the library, open the import menu in the header and choose **Online
+   Library**.
+2. Add a catalog with the address above. If your paper has a password, enter
+   it (any user name).
+3. The catalog appears at the top of the library. On iPhone and iPad, allow
+   Readest to find devices on your local network when it asks (or later in
+   **Settings > Privacy & Security > Local Network**).
+
+**Apple Books, or any reader:** open the paper in the phone's browser, tap
+**Download EPUB** at the foot of the front page, and open the file in the
+reader.
+
+**With the desktop app:** it answers only on its own computer, so a phone can't
+reach its catalog. Its EPUBs are in **Documents/Matutino**: if your Documents
+folder syncs (Desktop & Documents in iCloud Drive on a Mac, OneDrive on
+Windows), each issue reaches the phone's Files app, and Readest or Books open
+it from there. Readest on the same computer can use
+`http://127.0.0.1:8771/opds`.
 
 ## Sections
 
@@ -207,6 +320,9 @@ Matutino is built for a home network.
   local.
 - **Changes need JSON.** The desk's actions only accept `application/json`, so
   another website can't submit them through your browser.
+- **The desktop app keeps to itself.** It listens on `127.0.0.1` only and
+  answers only to its own address, so a web page can't reach it by pointing a
+  domain name at your computer.
 
 ## Using it responsibly
 
@@ -242,10 +358,24 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 | `boxes.py` | weather (Open-Meteo) and On this day (Wikipedia) |
 | `sections.py` | section list, section jobs, name matching |
 | `i18n.py` | the paper's words: English and Spanish, plus the packs in `languages/` |
+| `opds.py` | the reading-app catalog (OPDS) and the home-screen manifest |
+| `desktop.py` | the desktop app: menu bar / notification area, open at login |
 | `render.py` | the paper: front page, articles, editions |
 | `desk.py` | the desk page |
 | `server.py` | HTTP, JSON API, scheduler |
 | `db.py` | SQLite: settings, feeds, issues, printed stories |
+
+The desktop app is bundled with PyInstaller, on the system it is for:
+
+```
+python3 -m venv .venv-desktop && .venv-desktop/bin/pip install -r desktop/requirements.txt
+.venv-desktop/bin/pyinstaller --noconfirm desktop/matutino.spec   # dist/Matutino.app (or dist\Matutino)
+dist/Matutino.app/Contents/MacOS/Matutino --check                 # the bundle checks itself
+```
+
+Each release tag builds the Mac (Apple silicon and Intel) and Windows apps on
+GitHub and attaches them to the release; `desktop/windows.iss` is the Windows
+installer (Inno Setup). `python desktop/icon/make_icon.py` redraws the icons.
 
 `deploy.sh` (run on your computer) and `install.sh` (run on the server) copy
 the source to a Docker host over SSH, build the image there and start the
@@ -264,7 +394,7 @@ why GitHub lists Claude as a contributor.
 
 How it's kept honest:
 
-- **96 automated tests** that need no network (a local test server plays every
+- **103 automated tests** that need no network (a local test server plays every
   outside site) run on every push: Python 3.10 to 3.13 with the libraries, and
   3.9 and 3.13 without them. They cover feed parsing, the HTML cleaner, the
   printing rules, the EPUB structure, the local-network guard, the password and

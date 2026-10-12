@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0 (2026-10-12)
+
+- A desktop app for macOS (Apple silicon and Intel) and Windows: the whole
+  paper on your own computer, no server needed. It lives in the menu bar or the
+  notification area, opens at login if you like, prints a missed issue as soon
+  as the computer wakes, and files each EPUB in Documents/Matutino. The apps are
+  unsigned; the README says how to open them the first time.
+- On your home screen: the paper has an icon and a web-app manifest named after
+  your paper, and a button in its top strip installs it or says how.
+- A reading-app catalog (OPDS) at `/opds`: Librera, Readest, KOReader and other
+  readers subscribe once and get each issue as an EPUB. The desk shows the
+  address, and the README walks through Librera and Readest.
+- The server can be told which host names to answer to; the desktop app uses
+  this so a web page can't reach it through DNS tricks.
+- Issues are read and written as UTF-8 explicitly (for Windows).
+
 ## 0.4.0 (2026-10-12)
 
 - Section names print in the paper's language: on a Spanish paper the usual

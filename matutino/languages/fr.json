@@ -53,7 +53,11 @@
   "only_excerpt": "Le flux de l’éditeur ne contient que cet extrait.",
   "sun_times": "Lever du soleil %s, coucher %s. Open-Meteo, au bouclage.",
   "forecast_for": "Prévisions pour %s",
-  "otd_title": "Ce jour-là, %s"
+  "otd_title": "Ce jour-là, %s",
+  "install": "Ajouter à l’écran d’accueil",
+  "install_ios": "Touchez le bouton Partager, puis « Sur l’écran d’accueil ».",
+  "install_other": "Ouvrez le menu du navigateur et choisissez Installer ou Ajouter à l’écran d’accueil.",
+  "ok": "OK"
  },
  "days": [
   "lundi",

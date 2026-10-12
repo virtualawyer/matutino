@@ -53,7 +53,11 @@
   "only_excerpt": "Der Feed des Verlags enthält nur diesen Auszug.",
   "sun_times": "Sonnenaufgang %s, Sonnenuntergang %s. Open-Meteo, zum Redaktionsschluss.",
   "forecast_for": "Vorhersage für %s",
-  "otd_title": "An diesem Tag, %s"
+  "otd_title": "An diesem Tag, %s",
+  "install": "Zum Home-Bildschirm",
+  "install_ios": "Tippen Sie auf Teilen und dann auf „Zum Home-Bildschirm“.",
+  "install_other": "Öffnen Sie das Browsermenü und wählen Sie „Installieren“ oder „Zum Startbildschirm hinzufügen“.",
+  "ok": "OK"
  },
  "days": [
   "Montag",

@@ -53,7 +53,11 @@
   "only_excerpt": "Il feed dell’editore contiene solo questo estratto.",
   "sun_times": "Alba %s, tramonto %s. Open-Meteo, alla chiusura.",
   "forecast_for": "Previsioni per %s",
-  "otd_title": "Accadde oggi, %s"
+  "otd_title": "Accadde oggi, %s",
+  "install": "Aggiungi alla schermata Home",
+  "install_ios": "Tocca il pulsante Condividi, poi Aggiungi alla schermata Home.",
+  "install_other": "Apri il menu del browser e scegli Installa o Aggiungi a schermata Home.",
+  "ok": "OK"
  },
  "days": [
   "lunedì",

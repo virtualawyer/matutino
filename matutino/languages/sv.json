@@ -53,7 +53,11 @@
   "only_excerpt": "Utgivarens flöde innehåller bara detta utdrag.",
   "sun_times": "Soluppgång %s, solnedgång %s. Open-Meteo, vid pressläggning.",
   "forecast_for": "Prognos för %s",
-  "otd_title": "Den här dagen, %s"
+  "otd_title": "Den här dagen, %s",
+  "install": "Lägg till på hemskärmen",
+  "install_ios": "Tryck på Dela och sedan på Lägg till på hemskärmen.",
+  "install_other": "Öppna webbläsarens meny och välj Installera eller Lägg till på startskärmen.",
+  "ok": "OK"
  },
  "days": [
   "måndag",

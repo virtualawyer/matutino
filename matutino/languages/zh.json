@@ -53,7 +53,11 @@
   "only_excerpt": "发布者的订阅源仅提供此摘要。",
   "sun_times": "日出 %s，日落 %s。Open-Meteo，截至付印。",
   "forecast_for": "%s 天气预报",
-  "otd_title": "历史上的今天，%s"
+  "otd_title": "历史上的今天，%s",
+  "install": "添加到主屏幕",
+  "install_ios": "点按“分享”按钮，然后选择“添加到主屏幕”。",
+  "install_other": "打开浏览器菜单，选择“安装”或“添加到主屏幕”。",
+  "ok": "知道了"
  },
  "days": [
   "星期一",

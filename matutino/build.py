@@ -319,7 +319,7 @@ class Builder(object):
         if self._no_pictures:
             report["warning"] = "Less than 300 MB free on the server: printed without pictures."
 
-        with open(os.path.join(tmp, "issue.json"), "w") as f:
+        with open(os.path.join(tmp, "issue.json"), "w", encoding="utf-8") as f:
             json.dump(issue, f)
 
         final = os.path.join(self.issues_dir, date)
