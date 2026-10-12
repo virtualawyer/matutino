@@ -3,6 +3,8 @@
 **Your own morning newspaper, printed from the feeds you choose.**
 *Tu propio periódico matutino, impreso con los feeds que tú eliges.*
 
+https://github.com/user-attachments/assets/8807b893-c624-4ab4-9fe7-3b7abda94197
+
 Matutino is a small self-hosted app that reads the RSS/Atom feeds you pick,
 fetches each story's full text, and every morning prints a newspaper: a
 classic broadsheet you read in any browser on your network, and an EPUB for
