@@ -50,8 +50,9 @@ to arrive each morning as clean articles, in the browser and as an EPUB.
 - **EPUB.** Each issue is also bound as an EPUB 3 book, with series metadata,
   so Kavita lists one series with an issue per day. The paper's download link
   works with any e-reader.
-- **English or Spanish.** The paper's own words (dates, labels, weather)
-  follow the Language setting; stories print in their feeds' language.
+- **English or Spanish.** The paper's own words (dates, labels, weather,
+  section names) follow the Language setting; stories print in their feeds'
+  language.
 - **Small.** Python and a handful of libraries, one container, no database
   server; it runs comfortably in a container capped at 512 MB of memory.
 
@@ -112,6 +113,24 @@ name (so "Comics" works like Funnies):
   Country"); there is no weather until you do.
 - **Variety**: carries *On this day* from Wikipedia, in the paper's language.
 - **Funnies** and **Opinion** never lead the paper.
+
+Spanish names do the same jobs (Portada, Última hora, Clima, Variedades,
+Tiras cómicas, Opinión), and accents don't matter when matching.
+
+**Printed names.** A section's stored name is what its feeds and its job
+follow; what the paper prints can differ. On a Spanish paper the usual
+sections print in Spanish (World News as *Internacional*, Funnies as
+*Tiras cómicas*). To print any section under a name of your own, add it
+after an equals sign on the desk:
+
+```text
+World News = Mundo
+Local News = Nacionales
+```
+
+The new name shows in the section menu, the headings, the story kickers and
+the EPUB, in older issues too. Feeds pasted under `# Mundo` land in that
+section.
 
 ## Adding feeds
 

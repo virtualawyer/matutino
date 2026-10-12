@@ -93,9 +93,9 @@ def _byline(st, lang="en"):
     return " · ".join(bits)
 
 
-def story_xhtml(st, lang):
+def story_xhtml(st, lang, section=None):
     body = ['<article><p class="kicker">%s</p><h1>%s</h1><p class="byline">%s</p>'
-            % (T(st["section"]), T(st["title"]), _byline(st, lang))]
+            % (T(section or st["section"]), T(st["title"]), _byline(st, lang))]
     if st["image"]:
         cap = "<figcaption>%s</figcaption>" % T(st["caption"]) if st.get("caption") else ""
         body.append('<figure><img src="%s" alt=""/>%s</figure>' % (A(st["image"]), cap))
@@ -124,6 +124,7 @@ def write(issue, issue_dir, out_path):
     paper = issue["paper"]
     when = long_date(issue["date"], lang)
     L = i18n.strings(lang)
+    names = {sec["name"]: i18n.section_name(sec["name"], lang, issue.get("section_labels")) for sec in issue["sections"]}
     title = "%s — %s" % (paper, when)
     uid = "urn:uuid:%s" % uuid.uuid5(uuid.NAMESPACE_URL, "matutino:%s:%s" % (paper, issue["date"]))
     images = [rel for rel in _images(issue) if os.path.exists(os.path.join(issue_dir, rel))]
@@ -154,7 +155,7 @@ def write(issue, issue_dir, out_path):
             cover.append('<figure><img src="%s" alt=""/></figure>' % A(cover_img))
         cover.append('<div class="contents">')
         for i, sec in enumerate(issue["sections"], 1):
-            cover.append('<h2><a href="sec-%d.xhtml">%s</a></h2>' % (i, T(sec["name"])))
+            cover.append('<h2><a href="sec-%d.xhtml">%s</a></h2>' % (i, T(names[sec["name"]])))
             for st in sec["stories"]:
                 cover.append('<p><a href="s-%s.xhtml">%s</a></p>' % (st["id"], T(st["title"])))
         cover.append("</div>")
@@ -169,12 +170,12 @@ def write(issue, issue_dir, out_path):
                 items = weather_xhtml(issue["weather"], lang) + items
             elif sec.get("box") == "onthisday" and issue.get("onthisday"):
                 items = otd_xhtml(issue["onthisday"], issue["date"], lang) + items
-            z.writestr("OEBPS/sec-%d.xhtml" % i, _page(sec["name"], '<h1 class="section-title">%s</h1>'
-                                                       '<div class="contents">%s</div>' % (T(sec["name"]), items), lang))
+            z.writestr("OEBPS/sec-%d.xhtml" % i, _page(names[sec["name"]], '<h1 class="section-title">%s</h1>'
+                                                       '<div class="contents">%s</div>' % (T(names[sec["name"]]), items), lang))
             manifest.append(("sec-%d" % i, "sec-%d.xhtml" % i, "application/xhtml+xml", ""))
             spine.append("sec-%d" % i)
             for st in sec["stories"]:
-                z.writestr("OEBPS/s-%s.xhtml" % st["id"], story_xhtml(st, lang))
+                z.writestr("OEBPS/s-%s.xhtml" % st["id"], story_xhtml(st, lang, names.get(st["section"])))
                 manifest.append(("s-" + st["id"], "s-%s.xhtml" % st["id"], "application/xhtml+xml", ""))
                 spine.append("s-" + st["id"])
 
@@ -195,8 +196,8 @@ def write(issue, issue_dir, out_path):
         for i, sec in enumerate(issue["sections"], 1):
             inner = "".join('<li><a href="s-%s.xhtml">%s</a></li>' % (st["id"], T(st["title"]))
                             for st in sec["stories"])
-            nav.append('<li><a href="sec-%d.xhtml">%s</a>%s</li>' % (i, T(sec["name"]), "<ol>%s</ol>" % inner if inner else ""))
-            label, href = sec["name"], "sec-%d.xhtml" % i
+            nav.append('<li><a href="sec-%d.xhtml">%s</a>%s</li>' % (i, T(names[sec["name"]]), "<ol>%s</ol>" % inner if inner else ""))
+            label, href = names[sec["name"]], "sec-%d.xhtml" % i
             play[0] += 1
             sec_no = play[0]
             kids = "".join(point(st["title"], "s-%s.xhtml" % st["id"]) for st in sec["stories"])
@@ -220,7 +221,7 @@ def write(issue, issue_dir, out_path):
 
         n_stories = sum(len(s["stories"]) for s in issue["sections"])
         desc = "No. %d · %d stories · %s" % (issue["number"], n_stories,
-                                                        ", ".join(s["name"] for s in issue["sections"]))
+                                                        ", ".join(names[s["name"]] for s in issue["sections"]))
         modified = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(issue.get("built_at") or time.time()))
         meta = [
             '<dc:identifier id="uid">%s</dc:identifier>' % T(uid),

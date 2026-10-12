@@ -133,7 +133,8 @@ xkcd | https://xkcd.com/rss.xml | headlines"></textarea>
       <p><b>Breaking News</b> prints as a red band under the masthead.</p>
       <p><b>Local Weather</b> carries the forecast; <b>Variety News</b> carries <i>On this day</i>. Both print even without feeds.</p>
       <p><b>Funnies</b> and <b>Opinion</b> never lead the paper.</p>
-      <p class="hint">One section per line, in printing order. Those jobs follow the names, so &ldquo;Comics&rdquo; works like Funnies.</p>
+      <p class="hint">One section per line, in printing order. Those jobs follow the names, so &ldquo;Comics&rdquo; works like Funnies, and so do Spanish names such as Portada, Clima or Tiras c&oacute;micas.</p>
+      <p class="hint">To print a section under another name, add it after an equals sign: <code>World News = Mundo</code>. Its feeds and its job stay the same. On a Spanish paper (language <code>es</code>) the usual sections already print in Spanish.</p>
     </div>
   </div>
   <div class="row"><button class="btn" id="savesecs">Save sections</button><span class="msg" id="secmsg" style="margin:0"></span></div>
@@ -164,7 +165,7 @@ xkcd | https://xkcd.com/rss.xml | headlines"></textarea>
   <option>America/New_York</option><option>America/Chicago</option><option>America/Los_Angeles</option>
   <option>America/Mexico_City</option><option>America/Bogota</option><option>America/Buenos_Aires</option>
   <option>America/Costa_Rica</option><option>America/Puerto_Rico</option></datalist>
-  <p class="hint">Language sets the paper's own words (dates, labels) and On this day: <code>en</code> or <code>es</code>. Stories print in their feeds' language.</p>
+  <p class="hint">Language sets the paper's own words (dates, labels, section names) and On this day: <code>en</code> or <code>es</code>. Stories print in their feeds' language.</p>
 </section>
 
 <section class="box" style="border-bottom:0"><h2>Recent editions <span class="tools"><a class="link label" href="/archive">All editions &rarr;</a></span></h2><div class="issues" id="issues"></div></section>
@@ -214,7 +215,8 @@ function render(){
   var opts=function(sel){return all.map(function(n){return '<option'+(n===sel?' selected':'')+'>'+esc(n)+'</option>'}).join('')};
   var cur=$('section').value||(list.indexOf('Local News')>=0?'Local News':list[0]);
   if(document.activeElement!==$('section'))$('section').innerHTML=opts(cur);
-  if(document.activeElement!==$('secs'))$('secs').value=list.join('\\n');
+  var labels=S.settings.section_labels||{};
+  if(document.activeElement!==$('secs'))$('secs').value=list.map(function(n){return labels[n]?n+' = '+labels[n]:n}).join('\\n');
   if(!editing){
     if(!S.feeds.length){$('feeds').innerHTML='<p class="empty-list">No feeds on the list.</p>'}
     else $('feeds').innerHTML=secs.map(function(sec){return '<div class="group"><h3>'+esc(sec)+'</h3>'+

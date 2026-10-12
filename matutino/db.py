@@ -35,6 +35,7 @@ DEFAULTS = {
     "keep_days": 14,
     "language": "en",
     "sections": DEFAULT_SECTIONS,
+    "section_labels": {},  # section -> the name it prints under, set at the desk ("World News = Mundo")
     "weather_on": True,
     "weather_place": "",
     "weather_lat": None,

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 (2026-10-12)
+
+- Section names print in the paper's language: on a Spanish paper the usual
+  sections show as Portada, Última hora, Internacional, Tiras cómicas and so
+  on, in the section menu, headings, story kickers and the EPUB.
+- Printed names of your own: `World News = Mundo` on the desk's section list
+  prints a section under any name while its feeds and its job stay the same.
+- Spanish section names do the jobs too (Portada, Clima, Tiras cómicas...),
+  pasted `# Mundo` headings find their sections, and matching ignores accents.
+
 ## 0.3.0 (2026-10-11): first public release
 
 - Feeds in, a daily newspaper out: a broadsheet web paper (front page, sections,

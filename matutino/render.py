@@ -382,8 +382,8 @@ def _url(issue, st):
     return "/issue/%s/%s" % (issue["date"], st["id"])
 
 
-def _kicker(st, with_section=True):
-    sec = E(st["section"]) if with_section else ""
+def _kicker(st, with_section=True, names=None):
+    sec = E((names or {}).get(st["section"], st["section"])) if with_section else ""
     src = E(st["source"])
     if sec and src:
         return '<p class="kicker label">%s <span>&middot; %s</span></p>' % (sec, src)
@@ -480,6 +480,12 @@ def _role(sec):
     return sec.get("role") if "role" in sec else sec_mod.role(sec["name"])
 
 
+def section_names(issue):
+    """What each section of an issue prints as: the desk's names, else the language's usual ones."""
+    lang, custom = issue.get("language") or "en", issue.get("section_labels")
+    return {sec["name"]: i18n.section_name(sec["name"], lang, custom) for sec in issue["sections"]}
+
+
 def layout(issue):
     """Everything the front page and the cover thumbnail share."""
     stories = {st["id"]: st for sec in issue["sections"] for st in sec["stories"]}
@@ -504,6 +510,7 @@ def front_page(issue, zone):
     date, lang = issue["date"], issue.get("language") or "en"
     L = i18n.strings(lang)
     stories, lead, rail, breaking, shown = layout(issue)
+    names = section_names(issue)
     total = len(stories)
     w = issue.get("weather")
     day = i18n.long_date(date, lang)
@@ -525,7 +532,7 @@ def front_page(issue, zone):
     nav = [(i, sec) for i, (sec, _) in enumerate(shown) if _role(sec) != "front"]
     if len(nav) > 1:
         out.append('<nav class="sections label rise d1">%s</nav>' % "".join(
-            '<a href="#s%d">%s</a>' % (i, E(sec["name"])) for i, sec in nav))
+            '<a href="#s%d">%s</a>' % (i, E(names[sec["name"]])) for i, sec in nav))
     if breaking:
         out.append('<div class="breaking rise d1"><span class="flag label">%s</span><ul>%s</ul></div>' % (
             L["breaking"], "".join('<li><a href="%s">%s</a></li>' % (_url(issue, st), E(st["title"])) for st in breaking)))
@@ -535,7 +542,7 @@ def front_page(issue, zone):
         out.append('<section class="front"><article class="lead rise d2">%s<h2 class="hl"><a href="%s">%s</a></h2>%s'
                    '<p class="meta label">%s%s</p>%s'
                    '<div class="text">%s</div><a class="more label" href="%s">%s &rarr;</a></article>'
-                   % (_kicker(lead), _url(issue, lead), E(lead["title"]), deck,
+                   % (_kicker(lead, names=names), _url(issue, lead), E(lead["title"]), deck,
                       (L["by"] % E(lead["author"]) + " &middot; ") if lead["author"] else "",
                       L["min_read"] % lead["minutes"],
                       '<a href="%s">%s</a>' % (_url(issue, lead), _img(lead, date)) if lead["image"] else "",
@@ -546,13 +553,13 @@ def front_page(issue, zone):
                 pic = '<a href="%s">%s</a>' % (_url(issue, st), _img(st, date)) if i == 0 and st["image"] else ""
                 out.append('<article>%s%s<h3 class="hl"><a href="%s">%s</a></h3><p class="deck">%s</p>'
                            '<p class="meta label">%s</p></article>'
-                           % (pic, _kicker(st), _url(issue, st), E(st["title"]), E(st["summary"][:180]),
+                           % (pic, _kicker(st, names=names), _url(issue, st), E(st["title"]), E(st["summary"][:180]),
                               L["min_read"] % st["minutes"]))
             out.append("</aside>")
         out.append("</section>")
 
     for i, (sec, rest) in enumerate(shown):
-        title = L["more_top"] if _role(sec) == "front" else sec["name"]
+        title = L["more_top"] if _role(sec) == "front" else names[sec["name"]]
         out.append('<section class="sec rise d4" id="s%d"><div class="sec-h"><h2>%s</h2>'
                    '<a class="totop label" href="#top">%s &uarr;</a></div>' % (i, E(title), L["back_top"]))
         if sec.get("box") == "weather" and w:
@@ -596,6 +603,7 @@ def cover(issue):
     date, lang = issue["date"], issue.get("language") or "en"
     L = i18n.strings(lang)
     stories, lead, rail, breaking, shown = layout(issue)
+    names = section_names(issue)
     w = issue.get("weather")
     top_r = ("%s%s / %s" % (boxes.icon(w["days"][0]["icon"], 12), _deg(w["days"][0]["hi"]), _deg(w["days"][0]["lo"]))
              if w else L["n_stories"] % len(stories))
@@ -616,7 +624,7 @@ def cover(issue):
     for sec, rest in shown:
         if rest and _role(sec) not in ("front", "breaking") and len(foot) < 3:
             foot.append('<div><span class="k">%s</span><p class="c-hl">%s</p><i class="greek" style="--n:4"></i></div>'
-                        % (E(sec["name"]), E(rest[0]["title"])))
+                        % (E(names[sec["name"]]), E(rest[0]["title"])))
     if foot:
         out.append('<div class="c-foot">%s</div>' % "".join(foot))
     out.append("</div>")
@@ -639,7 +647,7 @@ def article_page(issue, st, zone):
            '<a class="mini" href="/issue/%s/">%s</a><span class="r">%s &middot; %s</span></div>'
            % (date, L["front_page"], date, E(issue["paper"]), L["no"] % issue["number"],
               E(i18n.long_date(date, lang)))]
-    out.append('<article class="story rise">%s<h1 class="hl">%s</h1>' % (_kicker(st), E(st["title"])))
+    out.append('<article class="story rise">%s<h1 class="hl">%s</h1>' % (_kicker(st, names=section_names(issue)), E(st["title"])))
     if _deck_needed(st) and st["mode"] == "full":
         out.append('<p class="deck">%s</p>' % E(st["summary"]))
     bits = []

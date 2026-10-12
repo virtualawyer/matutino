@@ -4,7 +4,7 @@ import shutil
 import unittest
 import zipfile
 
-from matutino import boxes, render
+from matutino import boxes, i18n, render
 from matutino import sections as S
 from matutino.server import ApiError
 
@@ -39,6 +39,31 @@ class Sections(unittest.TestCase):
         self.assertEqual(S.role("Comics"), "funnies")
         self.assertEqual(S.role("Weather & Tides"), "weather")
         self.assertEqual(S.role("World News"), "")
+
+    def test_spanish_names_do_the_same_jobs(self):
+        jobs = {"Portada": "front", "Última hora": "breaking", "Clima": "weather", "El tiempo": "weather",
+                "Variedades": "variety", "Tiras cómicas": "funnies", "Cómics": "funnies", "Opinión": "opinion",
+                "Internacional": ""}
+        for name, job in jobs.items():
+            self.assertEqual(S.role(name), job, name)
+        # pasted Spanish headings land on the paper's (English-named) sections; accents don't matter
+        cases = {"Mundo": "World News", "Deportes": "Sports News", "Ultima hora": "Breaking News",
+                 "Tiras cómicas": "Funnies", "Economía": "Local Business", "Clima": "Local Weather"}
+        for typed, want in cases.items():
+            self.assertEqual(S.match(typed, self.OWN), want, typed)
+        # ...and on the names the desk prints sections under
+        self.assertEqual(S.match("Nacionales y más", self.OWN, {"Local News": "Nacionales y más"}), "Local News")
+        self.assertIsNone(S.match("Nacionales y más", self.OWN))
+
+    def test_printed_section_names(self):
+        self.assertEqual(i18n.section_name("World News", "es"), "Internacional")
+        self.assertEqual(i18n.section_name("World News", "es-PR"), "Internacional")
+        self.assertEqual(i18n.section_name("World News", "en"), "World News")
+        self.assertEqual(i18n.section_name("Surfing", "es"), "Surfing")  # no usual name: printed as typed
+        self.assertEqual(i18n.section_name("World News", "es", {"World News": "Mundo"}), "Mundo")
+        self.assertEqual(i18n.section_name("World News", "en", {"World News": "Abroad"}), "Abroad")
+        for name in self.OWN:  # every section on the reference paper has a Spanish name
+            self.assertNotEqual(i18n.section_name(name, "es"), name, name)
 
     def test_order(self):
         self.assertEqual(S.order(["Funnies", "Zines", "Local News", "Alpha"], S.DEFAULT),
@@ -124,6 +149,30 @@ class FrontPageAndBoxes(unittest.TestCase):
         self.assertIn("Forecast for Tamarindo", pages)
         self.assertIn("Event of 2002", pages)
 
+    def test_spanish_paper_prints_spanish_section_names(self):
+        self.app.save_settings({"language": "es", "sections": "Front Page\nBreaking News\nVariety = Miscelánea\nWeather\nFunnies"})
+        r = self.app.builder.run("test")
+        iss = self.app.issue(r["date"])
+        self.assertEqual([s["name"] for s in iss["sections"]][:2], ["Front Page", "Breaking News"])  # stored names
+        html = render.front_page(iss, "UTC")
+        nav = re.search(r'<nav class="sections.*?</nav>', html, re.S).group(0)
+        for printed in ("Miscelánea", "Clima", "Tiras cómicas"):
+            self.assertIn(printed, nav)
+        for english in ("Variety", "Weather", "Funnies"):
+            self.assertNotIn(english, nav)
+        self.assertIn('<h2>Tiras cómicas</h2>', html)
+        self.assertIn('class="kicker label">Portada', html)  # the lead's kicker
+        self.assertIn('class="breaking', html)  # the jobs still follow the stored names
+        self.assertIn('class="wx-panel"', html)
+        # The desk's name today wins in older issues too (the server passes it in)
+        html = render.front_page(dict(iss, section_labels={"Funnies": "Monitos"}), "UTC")
+        self.assertIn('<h2>Monitos</h2>', html)
+        z, opf = check_epub(self, r["kavita"]["path"])
+        nav_x = z.read("OEBPS/nav.xhtml").decode("utf-8")
+        self.assertIn("Tiras cómicas", nav_x)
+        self.assertIn("Miscelánea", nav_x)
+        self.assertNotIn(">Funnies<", nav_x)
+
     def test_editions_page_draws_a_cover_per_issue(self):
         r = self.app.builder.run("test")
         iss = self.app.issue(r["date"])
@@ -148,6 +197,17 @@ class Settings(unittest.TestCase):
         with self.assertRaises(ApiError):
             self.app.save_settings({"sections": "\n \n"})
 
+    def test_sections_carry_printed_names(self):
+        self.app.save_settings({"sections": "Front Page\nWorld News = Mundo\nFunnies =  Monitos \nLocal News =\nSports = Sports"})
+        s = self.app.db.settings()
+        self.assertEqual(s["sections"], ["Front Page", "World News", "Funnies", "Local News", "Sports"])
+        self.assertEqual(s["section_labels"], {"World News": "Mundo", "Funnies": "Monitos"})
+        # a list without names clears them; labels can't be posted on their own
+        self.app.save_settings({"section_labels": {"Front Page": "x"}})
+        self.assertEqual(self.app.db.settings()["section_labels"], {"World News": "Mundo", "Funnies": "Monitos"})
+        self.app.save_settings({"sections": ["Front Page", "World News"]})
+        self.assertEqual(self.app.db.settings()["section_labels"], {})
+
     def test_weather_place_is_geocoded(self):
         with Fixture():
             out = self.app.save_settings({"weather_place": "Tamarindo, Costa Rica"})
@@ -162,6 +222,14 @@ class Settings(unittest.TestCase):
             self.app.add_feeds("%s/comic.xml" % fx.base, "", "feed")
         got = {f["url"].rsplit("/", 1)[1]: f["section"] for f in self.app.db.feeds()}
         self.assertEqual(got, {"news.xml": "World News", "daily.atom": "Surfing", "comic.xml": "Local News"})
+
+    def test_pasted_spanish_headings_and_printed_names(self):
+        self.app.save_settings({"sections": "Front Page\nWorld News\nLocal News = Nacionales\nFunnies"})
+        with Fixture() as fx:
+            self.app.add_feeds("# Mundo\n%s/f/news.xml\n# Nacionales\n%s/f/daily.atom\n# Tiras cómicas\n%s/comic.xml\n"
+                               % (fx.base, fx.base, fx.base), "", "full")
+        got = {f["url"].rsplit("/", 1)[1]: f["section"] for f in self.app.db.feeds()}
+        self.assertEqual(got, {"news.xml": "World News", "daily.atom": "Local News", "comic.xml": "Funnies"})
 
 
 if __name__ == "__main__":

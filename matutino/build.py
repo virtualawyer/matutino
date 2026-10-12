@@ -309,7 +309,7 @@ class Builder(object):
         number = self.db.next_number(date)
         issue = {
             "date": date, "number": number, "paper": s["paper_name"], "edition": s["edition"],
-            "language": s["language"], "built_at": now,
+            "language": s["language"], "section_labels": s["section_labels"], "built_at": now,
             "sources": len([f for f in per_feed if per_feed[f]]),
             "sections": by_section, "front": front(by_section),
             "weather": weather, "onthisday": onthisday,

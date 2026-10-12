@@ -156,13 +156,14 @@ class App(object):
             return list(pool.map(one, entries))
 
     def _default_section(self, s, wanted=""):
-        return sec_mod.match(wanted, s["sections"]) or (wanted.strip()[:40] if wanted.strip() else "") or \
+        return sec_mod.match(wanted, s["sections"], s["section_labels"]) or (wanted.strip()[:40] if wanted.strip() else "") or \
             ("Local News" if "Local News" in s["sections"] else s["sections"][0] if s["sections"] else "News")
 
     def _resolve(self, entries, default):
-        names = self.db.settings()["sections"]
+        s = self.db.settings()
+        names, labels = s["sections"], s["section_labels"]
         for e in entries:
-            e["section"] = sec_mod.resolve(e["section"], names, default)
+            e["section"] = sec_mod.resolve(e["section"], names, default, labels)
         return entries
 
     def add_feeds(self, text, section, mode):
@@ -248,8 +249,8 @@ class App(object):
         s = {}
         ranges = {"per_feed": (1, 30), "lookback_hours": (6, 336), "keep_days": (1, 365)}
         for k in body:
-            if k not in DEFAULTS or k in ("weather_lat", "weather_lon"):
-                continue
+            if k not in DEFAULTS or k in ("weather_lat", "weather_lon", "section_labels"):
+                continue  # coordinates come from the place; labels come with the section list
             v = body[k]
             if k in ("schedule_on", "weather_on", "onthisday_on", "browser_ua"):
                 s[k] = bool(v)
@@ -263,10 +264,19 @@ class App(object):
                 lines = v.splitlines() if isinstance(v, str) else v if isinstance(v, list) else None
                 if lines is None:
                     raise ApiError("sections must be a list")
-                names = list(dict.fromkeys(str(x).strip()[:40] for x in lines if str(x).strip()))
+                # "World News = Mundo" keeps the section (its feeds and job) and prints it as Mundo
+                names, labels = [], {}
+                for line in lines:
+                    name, _, label = str(line).partition("=")
+                    name, label = name.strip()[:40], label.strip()[:40]
+                    if name and name not in names:
+                        names.append(name)
+                        if label and label != name:
+                            labels[name] = label
                 if not names:
                     raise ApiError("The paper needs at least one section.")
                 s[k] = names[:40]
+                s["section_labels"] = {n: labels[n] for n in s[k] if n in labels}
             else:
                 v = str(v).strip()
                 if k == "paper_name" and not (1 <= len(v) <= 60):
@@ -388,27 +398,29 @@ class Handler(BaseHTTPRequestHandler):
             return self._challenge()
         s = app.db.settings()
         zone, lang = s["timezone"], s["language"]
+        # Section names print as the desk names them today, also in older issues.
+        named = lambda iss: iss and dict(iss, section_labels=s["section_labels"])
         if path == "/":
             date = app.latest_date()
             if not date:
                 return self._send(200, render.empty_page(s["paper_name"], app.builder.busy(), lang))
-            return self._send(200, render.front_page(app.issue(date), zone))
+            return self._send(200, render.front_page(named(app.issue(date)), zone))
         if path == "/desk":
             return self._send(200, desk.page(VERSION))
         if path in ("/archive", "/editions"):
             return self._send(200, render.archive_page(
-                [(r, app.issue(r["date"])) for r in app.db.issues() if app.issue(r["date"])], s["paper_name"], lang))
+                [(r, named(app.issue(r["date"]))) for r in app.db.issues() if app.issue(r["date"])], s["paper_name"], lang))
         if path == "/api/state":
             return self._json(200, app.state())
         m = ISSUE_RE.match(path)
         if m:
             if not path.endswith("/"):
                 return self._send(301, "", headers={"Location": path + "/"})
-            issue = app.issue(m.group(1))
+            issue = named(app.issue(m.group(1)))
             return self._send(200, render.front_page(issue, zone)) if issue else self._404()
         m = STORY_RE.match(path)
         if m:
-            issue = app.issue(m.group(1))
+            issue = named(app.issue(m.group(1)))
             st = issue and next((x for sec in issue["sections"] for x in sec["stories"]
                                  if x["id"] == m.group(2)), None)
             return self._send(200, render.article_page(issue, st, zone)) if st else self._404()

@@ -2,7 +2,8 @@
 
 Stories print in whatever language their feeds use; this covers the
 paper around them, chosen by the Language setting ("es", "es-CR" -> Spanish,
-anything else -> English). The desk stays in English.
+anything else -> English), including the names the usual sections print
+under. The desk stays in English.
 """
 
 import datetime
@@ -68,6 +69,23 @@ MONTHS = {"en": ["January", "February", "March", "April", "May", "June", "July",
           "es": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
                  "octubre", "noviembre", "diciembre"]}
 
+# What the usual sections print as. A section keeps its stored name (its feeds and its job
+# follow that name); these only change what the paper shows. The desk can override any of
+# them per section ("World News = Mundo"), which also covers names not listed here.
+SECTION_NAMES = {
+    "es": {
+        "Front Page": "Portada", "Breaking News": "Última hora", "Local News": "Noticias locales",
+        "World News": "Internacional", "International News": "Internacional",
+        "Puerto Rico News": "Puerto Rico", "Business": "Economía", "Local Business": "Negocios locales",
+        "Puerto Rico Business": "Negocios de Puerto Rico", "International Business": "Negocios internacionales",
+        "Crypto & Markets": "Cripto y mercados", "Real Estate": "Bienes raíces", "Technology": "Tecnología",
+        "Science": "Ciencia", "Science News": "Ciencia", "Health": "Salud", "Entertainment": "Entretenimiento",
+        "Sports": "Deportes", "Sports News": "Deportes", "Opinion": "Opinión", "Variety": "Variedades",
+        "Variety News": "Variedades", "Travel & Food": "Viajes y gastronomía", "Weather": "Clima",
+        "Local Weather": "Clima", "Funnies": "Tiras cómicas", "Comics": "Tiras cómicas",
+    },
+}
+
 WEATHER_ES = {
     0: "Despejado", 1: "Mayormente despejado", 2: "Parcialmente nublado", 3: "Nublado", 45: "Niebla",
     48: "Niebla helada", 51: "Llovizna ligera", 53: "Llovizna", 55: "Llovizna intensa", 56: "Llovizna helada",
@@ -84,6 +102,13 @@ def lang_of(code):
 
 def strings(code):
     return STRINGS[lang_of(code)]
+
+
+def section_name(name, code="en", custom=None):
+    """What a section prints as: the desk's own name for it, else the language's usual name."""
+    if custom and custom.get(name):
+        return custom[name]
+    return SECTION_NAMES.get(lang_of(code), {}).get(name, name)
 
 
 def _date(date):
