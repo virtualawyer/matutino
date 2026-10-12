@@ -1,12 +1,24 @@
-"""The paper's own words -- labels, dates, weather -- in English and Spanish.
+"""The paper's own words -- labels, dates, weather, section names -- in many languages.
 
-Stories print in whatever language their feeds use; this covers the
-paper around them, chosen by the Language setting ("es", "es-CR" -> Spanish,
-anything else -> English), including the names the usual sections print
-under. The desk stays in English.
+Stories print in whatever language their feeds use; this covers the paper
+around them, chosen by the Language setting ("de", "pt-BR" -> Portuguese,
+anything unknown -> English). English and Spanish live here; the other
+languages are packs in matutino/languages/<code>.json, and a pack dropped
+into the data folder's languages/ directory adds or overrides one without
+touching the code. The desk stays in English.
+
+A pack holds: name, dir ("ltr"/"rtl"), strings (every key English has),
+days (Monday first), months, optional months_gen and mon (short months),
+optional day1 ("1er"), and patterns for long / day_month / month_day / time /
+stamp built from {weekday} {day} {month} {month_gen} {mon} {m} {year} and,
+for time, {h} {H} {HH} {MM} {ampm} (with an ampm pair).
 """
 
 import datetime
+import glob
+import json
+import os
+import re
 
 STRINGS = {
     "en": {
@@ -96,68 +108,149 @@ WEATHER_ES = {
 }
 
 
+# Packs for the two built-in languages, from the tables above.
+LANGS = {
+    "en": {"name": "English", "dir": "ltr", "strings": STRINGS["en"], "days": DAYS["en"], "months": MONTHS["en"],
+           "long": "{weekday}, {month} {day}, {year}", "day_month": "{weekday}, {mon} {day}",
+           "month_day": "{month} {day}", "time": "{h}:{MM} {ampm}", "ampm": ["a.m.", "p.m."],
+           "stamp": "{mon} {day}, {time}", "weather": {}, "sections": {}},
+    "es": {"name": "Español", "dir": "ltr", "strings": STRINGS["es"], "days": DAYS["es"], "months": MONTHS["es"],
+           "long": "{weekday}, {day} de {month} de {year}", "day_month": "{weekday}, {day} {mon}",
+           "month_day": "{day} de {month}", "time": "{h}:{MM} {ampm}", "ampm": ["a. m.", "p. m."],
+           "stamp": "{day} {mon}, {time}", "weather": {str(k): v for k, v in WEATHER_ES.items()},
+           "sections": SECTION_NAMES["es"]},
+}
+REQUIRED = ("strings", "days", "months", "long", "day_month", "month_day", "time", "stamp")
+
+
+def load_dir(path):
+    """Add (or override) language packs from <path>/<code>.json; returns the codes loaded."""
+    loaded = []
+    for f in sorted(glob.glob(os.path.join(path, "*.json"))):
+        code = os.path.splitext(os.path.basename(f))[0].lower()
+        try:
+            with open(f, encoding="utf-8") as fh:
+                pack = json.load(fh)
+            missing = [k for k in REQUIRED if k not in pack]
+            if missing or len(pack["days"]) != 7 or len(pack["months"]) != 12:
+                raise ValueError("needs %s, 7 days and 12 months" % ", ".join(REQUIRED))
+            _check_patterns(pack)
+        except (OSError, ValueError) as e:
+            print("language pack %s skipped: %s" % (f, e), flush=True)
+            continue
+        pack.setdefault("name", code)
+        pack.setdefault("dir", "ltr")
+        own = {}
+        for k, v in pack["strings"].items():
+            if k in STRINGS["en"] and not (isinstance(v, str) and _holes(v) == _holes(STRINGS["en"][k])):
+                print("language pack %s: %s ignored, it must keep %s" % (f, k, " ".join(_holes(STRINGS["en"][k])) or "no % codes"),
+                      flush=True)
+                continue
+            own[k] = v
+        pack["strings"] = dict(STRINGS["en"], **own)  # a missing or broken label falls back to English
+        pack.setdefault("weather", {})
+        pack.setdefault("sections", {})
+        LANGS[code] = pack
+        STRINGS[code] = pack["strings"]
+        loaded.append(code)
+    return loaded
+
+
+def _holes(text):
+    return sorted(re.findall(r"%[^%]|%%", text))
+
+
+def _check_patterns(pack):
+    """Raise ValueError if a date or time pattern names a field that doesn't exist."""
+    try:
+        f = _fields(datetime.date(2026, 1, 1), pack)
+        for k in ("long", "day_month", "month_day"):
+            pack[k].format(**f)
+        pack["stamp"].format(time="", **f)
+        pack["time"].format(h=1, H=1, HH="01", MM="05", ampm="")
+    except (KeyError, IndexError, AttributeError, TypeError, ValueError) as e:
+        raise ValueError("bad date or time pattern (%s)" % e)
+
+
+def languages():
+    """(code, native name) for every language the paper speaks, English and Spanish first."""
+    rest = sorted((c for c in LANGS if c not in ("en", "es")), key=lambda c: LANGS[c]["name"].lower())
+    return [(c, LANGS[c]["name"]) for c in ["en", "es"] + rest]
+
+
 def lang_of(code):
-    return "es" if (code or "").lower().startswith("es") else "en"
+    base = (code or "").strip().lower().replace("_", "-").split("-")[0]
+    return base if base in LANGS else "en"
+
+
+def pack(code):
+    return LANGS[lang_of(code)]
 
 
 def strings(code):
-    return STRINGS[lang_of(code)]
+    return pack(code)["strings"]
+
+
+def direction(code):
+    return pack(code).get("dir", "ltr")
 
 
 def section_name(name, code="en", custom=None):
     """What a section prints as: the desk's own name for it, else the language's usual name."""
     if custom and custom.get(name):
         return custom[name]
-    return SECTION_NAMES.get(lang_of(code), {}).get(name, name)
+    return pack(code).get("sections", {}).get(name, name)
 
 
 def _date(date):
     return datetime.date(*[int(x) for x in date.split("-")]) if isinstance(date, str) else date
 
 
+def _fields(d, P):
+    months = P["months"]
+    return {"weekday": P["days"][d.weekday()], "day": P.get("day1") if d.day == 1 and P.get("day1") else str(d.day),
+            "month": months[d.month - 1], "month_gen": (P.get("months_gen") or months)[d.month - 1],
+            "mon": (P.get("mon") or [m[:3] for m in months])[d.month - 1], "m": d.month, "year": d.year}
+
+
 def long_date(date, code="en"):
-    """'Sunday, October 11, 2026' / 'domingo, 11 de octubre de 2026'."""
-    d, lang = _date(date), lang_of(code)
-    day, month = DAYS[lang][d.weekday()], MONTHS[lang][d.month - 1]
-    if lang == "es":
-        return "%s, %d de %s de %d" % (day, d.day, month, d.year)
-    return "%s, %s %d, %d" % (day, month, d.day, d.year)
+    """'Sunday, October 11, 2026' / 'domingo, 11 de octubre de 2026' / 'Sonntag, 11. Oktober 2026'."""
+    P = pack(code)
+    return P["long"].format(**_fields(_date(date), P))
 
 
 def day_month(date, code="en"):
     """'Sunday, Oct 11' / 'domingo, 11 oct' (the editions gallery)."""
-    d, lang = _date(date), lang_of(code)
-    day, month = DAYS[lang][d.weekday()], MONTHS[lang][d.month - 1][:3]
-    return "%s, %d %s" % (day, d.day, month) if lang == "es" else "%s, %s %d" % (day, month, d.day)
+    P = pack(code)
+    return P["day_month"].format(**_fields(_date(date), P))
 
 
 def month_day(date, code="en"):
-    """'October 11' / '11 de octubre'."""
-    d, lang = _date(date), lang_of(code)
-    month = MONTHS[lang][d.month - 1]
-    return "%d de %s" % (d.day, month) if lang == "es" else "%s %d" % (month, d.day)
+    """'October 11' / '11 de octubre' (On this day)."""
+    P = pack(code)
+    return P["month_day"].format(**_fields(_date(date), P))
 
 
 def weekday(date, code="en"):
-    return DAYS[lang_of(code)][_date(date).weekday()]
+    return pack(code)["days"][_date(date).weekday()]
 
 
 def hm(hour, minute, code="en"):
-    """'8:05 p.m.' / '8:05 p. m.'"""
-    es = lang_of(code) == "es"
-    suffix = ("a. m." if hour < 12 else "p. m.") if es else ("a.m." if hour < 12 else "p.m.")
-    return "%d:%02d %s" % (hour % 12 or 12, minute, suffix)
+    """'8:05 p.m.' / '8:05 p. m.' / '20:05 Uhr'."""
+    P = pack(code)
+    ampm = P.get("ampm") or ["", ""]
+    return P["time"].format(h=hour % 12 or 12, H=hour, HH="%02d" % hour, MM="%02d" % minute,
+                            ampm=ampm[0 if hour < 12 else 1]).strip()
 
 
 def stamp(dt, code="en"):
     """'Oct 11, 8:05 p.m.' / '11 oct, 8:05 p. m.' for a datetime."""
-    lang = lang_of(code)
-    month = MONTHS[lang][dt.month - 1][:3]
-    when = hm(dt.hour, dt.minute, code)
-    return "%d %s, %s" % (dt.day, month, when) if lang == "es" else "%s %d, %s" % (month, dt.day, when)
+    P = pack(code)
+    return P["stamp"].format(time=hm(dt.hour, dt.minute, code), **_fields(dt.date(), P))
 
 
 def weather(code, english, lang_code="en"):
-    if lang_of(lang_code) == "es":
-        return WEATHER_ES.get(code, english)
-    return english
+    return pack(lang_code).get("weather", {}).get(str(code)) or english
+
+
+load_dir(os.path.join(os.path.dirname(__file__), "languages"))

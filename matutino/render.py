@@ -60,7 +60,7 @@ img{display:block;max-width:100%;height:auto}
 .ear{font-family:var(--label);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--muted);line-height:1.35;border:1px solid var(--hair);padding:7px 10px;max-width:160px}
 .ear b{color:var(--ink);font-weight:700}
-.ear.r{justify-self:end;text-align:right}
+.ear.r{justify-self:end;text-align:end}
 .dateline{border-top:3px solid var(--rule);border-bottom:1px solid var(--rule);margin-top:2px;
   padding:7px 0;display:flex;justify-content:center;gap:10px 22px;flex-wrap:wrap;position:relative}
 .dateline::before{content:"";position:absolute;left:0;right:0;top:2px;border-top:1px solid var(--rule)}
@@ -86,19 +86,19 @@ a:hover .pic img,.pic:hover img{filter:none}
 /* front page */
 .front{display:grid;grid-template-columns:minmax(0,2.05fr) minmax(0,1fr);gap:0;padding:26px 0 30px;
   border-bottom:3px double var(--rule)}
-.lead{padding-right:30px}
+.lead{padding-inline-end:30px}
 .lead .hl{font-size:clamp(32px,4.4vw,56px);line-height:1.02}
 .lead .deck{font-size:21px;line-height:1.38;margin-top:14px}
 .lead .pic{margin:18px 0 8px}
 .lead .pic img{max-height:560px;object-fit:cover}
 .lead .text{columns:2 260px;column-gap:28px;column-rule:1px solid var(--hair);margin-top:16px;
   font-size:17px;line-height:1.55;hyphens:auto;-webkit-hyphens:auto}
-.lead .text p{margin:0 0 .8em;text-align:justify;text-align-last:left}
+.lead .text p{margin:0 0 .8em;text-align:justify;text-align-last:start}
 .lead .text p:first-child::first-letter{float:left;font-family:var(--head);font-weight:700;
   font-size:3.6em;line-height:.82;padding:6px 8px 0 0;color:var(--ink)}
 .more{display:inline-block;margin-top:4px;color:var(--accent)}
 .more:hover{text-decoration:underline}
-.rail{border-left:1px solid var(--hair);padding-left:26px}
+.rail{border-inline-start:1px solid var(--hair);padding-inline-start:26px}
 .rail article{padding:0 0 18px;margin:0 0 18px;border-bottom:1px solid var(--hair)}
 .rail article:last-child{border-bottom:0;margin-bottom:0}
 .rail .hl{font-size:23px}
@@ -121,10 +121,10 @@ a:hover .pic img,.pic:hover img{filter:none}
 .feature .hl{font-size:clamp(25px,2.6vw,34px)}
 .feature .deck{font-size:17px}
 /* Grid, not CSS columns: Chrome stacks a handful of cards into one column.
-   Each card carries a left hairline; the wrapper clips the first column's. */
+   Each card carries a start-side hairline; the wrapper clips the first column's. */
 .cols-wrap{overflow:hidden}
-.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-left:-27px}
-.card{border-left:1px solid var(--hair);border-bottom:1px solid var(--hair);padding:0 0 18px 26px;margin-bottom:18px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-inline-start:-27px}
+.card{border-inline-start:1px solid var(--hair);border-bottom:1px solid var(--hair);padding:0 0 18px;padding-inline-start:26px;margin-bottom:18px}
 .card .hl{font-size:19.5px}
 .card .deck{font-size:15px;line-height:1.42;font-style:normal}
 .card .pic img{aspect-ratio:16/10;object-fit:cover}
@@ -136,7 +136,7 @@ a:hover .pic img,.pic:hover img{filter:none}
   padding:16px 0 12px;border-bottom:3px double var(--rule)}
 .art-top .mini{font-family:var(--mast);font-weight:700;font-size:clamp(22px,3.6vw,32px);
   text-align:center;line-height:1;white-space:nowrap}
-.art-top .l{color:var(--muted)} .art-top .r{color:var(--muted);text-align:right}
+.art-top .l{color:var(--muted)} .art-top .r{color:var(--muted);text-align:end}
 .art-top a:hover{color:var(--ink)}
 .story{max-width:690px;margin:0 auto;padding-top:38px}
 .story .kicker{text-align:center}
@@ -152,7 +152,7 @@ a:hover .pic img,.pic:hover img{filter:none}
 .body p{margin:0 0 1.05em}
 .body > p:first-of-type::first-letter{float:left;font-family:var(--head);font-weight:700;
   font-size:4.1em;line-height:.8;padding:7px 10px 0 0}
-.body > p:last-of-type::after{content:"\25A0";color:var(--accent);font-size:.7em;margin-left:.4em;vertical-align:1px}
+.body > p:last-of-type::after{content:"\25A0";color:var(--accent);font-size:.7em;margin-inline-start:.4em;vertical-align:1px}
 .body h2,.body h3,.body h4{font-family:var(--head);line-height:1.2;margin:1.6em 0 .5em}
 .body h2{font-size:1.35em} .body h3{font-size:1.18em} .body h4{font-size:1.05em}
 .body a{text-decoration:underline;text-decoration-color:var(--hair);text-underline-offset:3px;
@@ -161,13 +161,13 @@ a:hover .pic img,.pic:hover img{filter:none}
 .body img{margin:1.4em auto;max-height:700px;width:auto}
 .body figure{margin:1.6em 0}
 .body figcaption{font-family:var(--label);font-size:13px;letter-spacing:.02em;color:var(--muted);margin-top:-.8em}
-.body blockquote{margin:1.4em 0;padding:0 0 0 22px;border-left:3px solid var(--accent);
+.body blockquote{margin:1.4em 0;padding:0;padding-inline-start:22px;border-inline-start:3px solid var(--accent);
   font-family:var(--head);font-size:1.12em;font-style:italic;color:var(--ink-2)}
-.body ul,.body ol{padding-left:1.3em} .body li{margin:.3em 0}
+.body ul,.body ol{padding-inline-start:1.3em} .body li{margin:.3em 0}
 .body pre{font-family:var(--mono);font-size:14px;background:var(--paper-2);padding:14px;overflow-x:auto;line-height:1.45}
 .body code{font-family:var(--mono);font-size:.86em}
 .body table{border-collapse:collapse;width:100%;font-size:15px;display:block;overflow-x:auto}
-.body th,.body td{border-bottom:1px solid var(--hair);padding:6px 8px;text-align:left;vertical-align:top}
+.body th,.body td{border-bottom:1px solid var(--hair);padding:6px 8px;text-align:start;vertical-align:top}
 .body hr{border:0;text-align:center;margin:2em 0} .body hr::after{content:"\2042";color:var(--muted)}
 .note{border:1px solid var(--hair);background:var(--paper-2);padding:12px 16px;margin:26px 0 0;
   font-size:15px;color:var(--ink-2)}
@@ -179,7 +179,7 @@ a:hover .pic img,.pic:hover img{filter:none}
 .pager{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:46px auto 0;max-width:900px;
   border-top:3px double var(--rule)}
 .pager a{padding:16px 0}
-.pager a + a,.pager span + a{border-left:1px solid var(--hair);padding-left:22px;text-align:right}
+.pager a + a,.pager span + a{border-inline-start:1px solid var(--hair);padding-inline-start:22px;text-align:end}
 .pager .hl{font-size:19px;margin-top:6px}
 .pager a:hover .hl{color:var(--accent)}
 
@@ -197,7 +197,7 @@ footer.colophon{margin-top:56px;padding-top:12px;border-top:1px solid var(--rule
 footer.colophon a:hover{color:var(--ink)}
 
 /* weather ear, breaking band, boxes */
-.ear.wx{display:flex;gap:9px;align-items:center;max-width:210px;text-align:left}
+.ear.wx{display:flex;gap:9px;align-items:center;max-width:210px;text-align:start}
 .ear.wx svg{flex:none;color:var(--ink)}
 .dl-wx{display:none}
 .breaking{display:flex;align-items:stretch;border-bottom:1px solid var(--rule);margin-top:-1px}
@@ -205,11 +205,11 @@ footer.colophon a:hover{color:var(--ink)}
   white-space:nowrap;font-weight:700;letter-spacing:.2em}
 .breaking ul{list-style:none;margin:0;padding:10px 0 10px 20px;flex:1;display:grid;
   grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:7px 30px;align-content:center}
-.breaking li{font-family:var(--head);font-weight:700;font-size:16px;line-height:1.3;padding-left:15px;position:relative}
-.breaking li::before{content:"";position:absolute;left:0;top:.5em;width:6px;height:6px;background:var(--accent)}
+.breaking li{font-family:var(--head);font-weight:700;font-size:16px;line-height:1.3;padding-inline-start:15px;position:relative}
+.breaking li::before{content:"";position:absolute;inset-inline-start:0;top:.5em;width:6px;height:6px;background:var(--accent)}
 .breaking a:hover{color:var(--accent)}
 .wx-panel{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,2fr);border:1px solid var(--rule);margin-bottom:8px}
-.wx-main{padding:20px 22px;border-right:1px solid var(--hair)}
+.wx-main{padding:20px 22px;border-inline-end:1px solid var(--hair)}
 .wx-today{display:flex;gap:18px;align-items:center}
 .wx-today svg{color:var(--ink);flex:none}
 .wx-desc{margin:0;font-family:var(--head);font-weight:700;font-size:22px}
@@ -221,7 +221,7 @@ footer.colophon a:hover{color:var(--ink)}
 .wx-facts dd{margin:2px 0 0;font-family:var(--body);font-size:15px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink)}
 .wx-days{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 .wx-day{padding:20px 18px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
-.wx-day + .wx-day{border-left:1px solid var(--hair)}
+.wx-day + .wx-day{border-inline-start:1px solid var(--hair)}
 .wx-day p{margin:0}
 .wx-day svg{color:var(--ink)}
 .wx-hl{font-family:var(--head);font-weight:700;font-size:22px}
@@ -252,7 +252,7 @@ footer.colophon a:hover{color:var(--ink)}
 .cv{padding:6cqw 6cqw 0;height:100%;color:var(--ink)}
 .c-top{display:flex;justify-content:space-between;align-items:center;font:600 2.7cqw/1 var(--label);letter-spacing:.1em;
   text-transform:uppercase;color:var(--muted)}
-.c-top svg{width:4.4cqw;height:4.4cqw;vertical-align:-1.2cqw;margin-right:.8cqw;color:var(--ink)}
+.c-top svg{width:4.4cqw;height:4.4cqw;vertical-align:-1.2cqw;margin-inline-end:.8cqw;color:var(--ink)}
 .c-mast{font:700 10.4cqw/1 var(--mast);text-align:center;white-space:nowrap;overflow:hidden;margin:3cqw 0 2.4cqw;letter-spacing:-.01em}
 .c-rule{height:1.6cqw;border-top:.9cqw solid var(--rule);border-bottom:.35cqw solid var(--rule)}
 .c-dl{font:600 2.5cqw/1 var(--label);letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:1.7cqw 0;
@@ -263,7 +263,7 @@ footer.colophon a:hover{color:var(--ink)}
 .c-body{display:grid;grid-template-columns:61fr 39fr;gap:3.6cqw;margin-top:3.6cqw}
 .c-lead img,.c-lead .ph{width:100%;aspect-ratio:4/3;object-fit:cover;filter:grayscale(.2) contrast(1.03);background:var(--paper-2)}
 .c-hl{font:700 5.2cqw/1.06 var(--head);margin:2.2cqw 0 2cqw;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.c-rail{border-left:.35cqw solid var(--hair);padding-left:3.2cqw}
+.c-rail{border-inline-start:.35cqw solid var(--hair);padding-inline-start:3.2cqw}
 .c-rail .c-hl{font-size:3.3cqw;margin:0 0 1.4cqw}
 .c-rail .c-hl ~ .c-hl{margin-top:2.6cqw}
 .greek{display:block;height:calc(var(--n,4) * 2.25cqw);background:repeating-linear-gradient(to bottom,var(--greek) 0 1cqw,transparent 1cqw 2.25cqw)}
@@ -273,7 +273,7 @@ footer.colophon a:hover{color:var(--ink)}
 .ed-cap{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:16px}
 .ed-cap .hl{font-size:19px}
 .ed-cap .label{color:var(--muted);font-size:11px;white-space:nowrap}
-.ed-tag{position:absolute;top:-10px;left:12px;z-index:2;background:var(--accent);color:var(--paper);padding:4px 9px;
+.ed-tag{position:absolute;top:-10px;inset-inline-start:12px;z-index:2;background:var(--accent);color:var(--paper);padding:4px 9px;
   font-size:10.5px}
 .ed-epub{color:var(--muted);font-size:11px}
 .ed-epub:hover{color:var(--accent)}
@@ -295,11 +295,11 @@ footer.colophon a:hover{color:var(--ink)}
 }
 @media (max-width:860px){
   .front{grid-template-columns:1fr}
-  .lead{padding-right:0}
-  .rail{border-left:0;padding-left:0;border-top:1px solid var(--rule);margin-top:26px;padding-top:22px}
+  .lead{padding-inline-end:0}
+  .rail{border-inline-start:0;padding-inline-start:0;border-top:1px solid var(--rule);margin-top:26px;padding-top:22px}
   .feature{grid-template-columns:1fr}
   .wx-panel{grid-template-columns:1fr}
-  .wx-main{border-right:0;border-bottom:1px solid var(--hair)}
+  .wx-main{border-inline-end:0;border-bottom:1px solid var(--hair)}
   .breaking{flex-direction:column}
   .breaking .flag{align-self:flex-start}
   .breaking ul{padding:12px 0;grid-template-columns:1fr}
@@ -309,12 +309,12 @@ footer.colophon a:hover{color:var(--ink)}
   .strip .date{display:none}
   .dateline{gap:4px 14px}
   .lead .deck,.story .deck{font-size:18px}
-  .lead .text p{text-align:left}
+  .lead .text p{text-align:start}
   .body{font-size:18px}
   .art-top{grid-template-columns:auto 1fr auto}
   .art-top .r{display:none}
   .pager{grid-template-columns:1fr}
-  .pager a + a,.pager span + a{border-left:0;padding-left:0;text-align:left;border-top:1px solid var(--hair)}
+  .pager a + a,.pager span + a{border-inline-start:0;padding-inline-start:0;text-align:start;border-top:1px solid var(--hair)}
   .archive a.row{grid-template-columns:auto 1fr}
   .archive a.row .label:last-child{display:none}
   .editions{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 18px}
@@ -322,6 +322,15 @@ footer.colophon a:hover{color:var(--ink)}
   .wx-days{grid-template-columns:repeat(3,minmax(0,1fr))}
   .wx-day{padding:14px 6px}
 }
+/* Right-to-left papers (Arabic): the layout above uses logical sides, so it mirrors on its own.
+   Stories keep their feed's direction, so an English story still reads left to right. */
+[dir=rtl] .arw{display:inline-block;transform:scaleX(-1)}
+[dir=rtl] .hl,[dir=rtl] .deck,[dir=rtl] .body p,[dir=rtl] .body li,[dir=rtl] .body h2,[dir=rtl] .body h3,
+[dir=rtl] .body h4,[dir=rtl] .body blockquote,[dir=rtl] .lead .text p,[dir=rtl] .c-hl{unicode-bidi:plaintext}
+:lang(ar) *{letter-spacing:0 !important}
+[dir=rtl] .lead .text p:first-child::first-letter,[dir=rtl] .body > p:first-of-type::first-letter,
+:lang(zh) .lead .text p:first-child::first-letter,:lang(zh) .body > p:first-of-type::first-letter{
+  float:none;font:inherit;line-height:inherit;padding:0;color:inherit}
 """
 
 THEME_JS = """<script>try{var t=localStorage.getItem('pb-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>"""
@@ -339,11 +348,11 @@ MOON = ('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="cur
 
 
 def doc(title, body, desc="", lang="en"):
-    return ("<!doctype html><html lang=\"%s\"><head><meta charset=\"utf-8\">"
+    return ("<!doctype html><html lang=\"%s\"%s><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">"
             "<meta name=\"color-scheme\" content=\"light dark\">"
             "<title>%s</title>%s<style>%s</style>%s</head><body><div class=\"page\" id=\"top\">%s</div>%s</body></html>"
-            % (i18n.lang_of(lang), E(title), "<meta name=\"description\" content=\"%s\">" % E(desc) if desc else "",
+            % (i18n.lang_of(lang), ' dir="rtl"' if i18n.direction(lang) == "rtl" else "", E(title), "<meta name=\"description\" content=\"%s\">" % E(desc) if desc else "",
                CSS, THEME_JS, body, TOGGLE_JS))
 
 
@@ -541,7 +550,7 @@ def front_page(issue, zone):
         deck = '<p class="deck">%s</p>' % E(lead["summary"]) if _deck_needed(lead) else ""
         out.append('<section class="front"><article class="lead rise d2">%s<h2 class="hl"><a href="%s">%s</a></h2>%s'
                    '<p class="meta label">%s%s</p>%s'
-                   '<div class="text">%s</div><a class="more label" href="%s">%s &rarr;</a></article>'
+                   '<div class="text">%s</div><a class="more label" href="%s">%s <span class="arw">&rarr;</span></a></article>'
                    % (_kicker(lead, names=names), _url(issue, lead), E(lead["title"]), deck,
                       (L["by"] % E(lead["author"]) + " &middot; ") if lead["author"] else "",
                       L["min_read"] % lead["minutes"],
@@ -643,7 +652,7 @@ def article_page(issue, st, zone):
     prev = order[i - 1] if i > 0 else None
     nxt = order[i + 1] if i + 1 < len(order) else None
 
-    out = ['<div class="art-top label"><a class="l" href="/issue/%s/">&larr; %s</a>'
+    out = ['<div class="art-top label"><a class="l" href="/issue/%s/"><span class="arw">&larr;</span> %s</a>'
            '<a class="mini" href="/issue/%s/">%s</a><span class="r">%s &middot; %s</span></div>'
            % (date, L["front_page"], date, E(issue["paper"]), L["no"] % issue["number"],
               E(i18n.long_date(date, lang)))]
@@ -670,13 +679,13 @@ def article_page(issue, st, zone):
                    % (E(st["link"]), L["read_at"] % E(st["host"] or L["the_source"])))
     out.append("</div>")
     out.append('<nav class="pager">')
-    out.append('<a rel="prev" href="%s"><span class="label">&larr; %s</span><div class="hl">%s</div></a>'
+    out.append('<a rel="prev" href="%s"><span class="label"><span class="arw">&larr;</span> %s</span><div class="hl">%s</div></a>'
                % (_url(issue, prev), L["previous"], E(prev["title"])) if prev else
-               '<a rel="prev" href="/issue/%s/"><span class="label">&larr; %s</span><div class="hl">%s</div></a>'
+               '<a rel="prev" href="/issue/%s/"><span class="label"><span class="arw">&larr;</span> %s</span><div class="hl">%s</div></a>'
                % (date, L["front_page"], E(issue["paper"])))
-    out.append('<a rel="next" href="%s"><span class="label">%s &rarr;</span><div class="hl">%s</div></a>'
+    out.append('<a rel="next" href="%s"><span class="label">%s <span class="arw">&rarr;</span></span><div class="hl">%s</div></a>'
                % (_url(issue, nxt), L["next"], E(nxt["title"])) if nxt else
-               '<a rel="next" href="/issue/%s/"><span class="label">%s &rarr;</span><div class="hl">%s</div></a>'
+               '<a rel="next" href="/issue/%s/"><span class="label">%s <span class="arw">&rarr;</span></span><div class="hl">%s</div></a>'
                % (date, L["back_front"], L["end_paper"]))
     out.append("</nav>")
     return doc("%s — %s" % (st["title"], issue["paper"]), "".join(out), st["summary"], lang)

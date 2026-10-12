@@ -9,6 +9,15 @@
   prints a section under any name while its feeds and its job stay the same.
 - Spanish section names do the jobs too (Portada, Clima, Tiras cómicas...),
   pasted `# Mundo` headings find their sections, and matching ignores accents.
+- Eleven more languages, the rest of those Wikipedia publishes *On this day*
+  in: German, French, Portuguese, Italian, Swedish, Russian, Ukrainian,
+  Bosnian, Turkish, Arabic and Chinese. Each covers dates, labels, weather and
+  section names; regional codes such as `pt-BR` use their base language.
+- Arabic papers are laid out right to left on the web and in the EPUB;
+  stories keep their own direction.
+- Language packs: drop `<code>.json` into the data folder's `languages/` to add
+  a language or change a word; broken labels fall back to English.
+- The desk's Language setting is now a list of the languages the paper speaks.
 
 ## 0.3.0 (2026-10-11): first public release
 

@@ -31,6 +31,7 @@ figure{margin:1em 0;text-align:center}
 img{max-width:100%;height:auto}
 figcaption{font-size:.8em;font-style:italic;opacity:.8}
 blockquote{margin:1em 0;padding-left:1em;border-left:2px solid currentColor;font-style:italic}
+html[dir="rtl"] blockquote{padding-left:0;border-left:0;padding-right:1em;border-right:2px solid currentColor}
 .source{font-size:.8em;margin-top:2em;padding-top:.6em;border-top:1px solid currentColor;opacity:.75}
 .mast{text-align:center;margin-top:2em}
 .mast h1{font-size:2.4em;margin:0}
@@ -77,9 +78,9 @@ def long_date(date, lang="en"):
 def _page(title, body, lang):
     return ('<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n'
             '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" '
-            'xml:lang="%s" lang="%s"><head><meta charset="utf-8"/><title>%s</title>'
+            'xml:lang="%s" lang="%s"%s><head><meta charset="utf-8"/><title>%s</title>'
             '<link rel="stylesheet" type="text/css" href="style.css"/></head><body>%s</body></html>'
-            % (A(lang), A(lang), T(title), body))
+            % (A(lang), A(lang), ' dir="rtl"' if i18n.direction(lang) == "rtl" else "", T(title), body))
 
 
 def _byline(st, lang="en"):
@@ -94,12 +95,15 @@ def _byline(st, lang="en"):
 
 
 def story_xhtml(st, lang, section=None):
-    body = ['<article><p class="kicker">%s</p><h1>%s</h1><p class="byline">%s</p>'
-            % (T(section or st["section"]), T(st["title"]), _byline(st, lang))]
+    # In a right-to-left paper a story keeps its feed's own direction.
+    auto = ' dir="auto"' if i18n.direction(lang) == "rtl" else ""
+    body = ['<article><p class="kicker">%s</p><h1%s>%s</h1><p class="byline">%s</p>'
+            % (T(section or st["section"]), auto, T(st["title"]), _byline(st, lang))]
     if st["image"]:
         cap = "<figcaption>%s</figcaption>" % T(st["caption"]) if st.get("caption") else ""
         body.append('<figure><img src="%s" alt=""/>%s</figure>' % (A(st["image"]), cap))
-    body.append(st["html"] or "<p>%s</p>" % T(st["summary"]))
+    text = st["html"] or "<p>%s</p>" % T(st["summary"])
+    body.append('<div%s>%s</div>' % (auto, text) if auto else text)
     if st["link"]:
         L = i18n.strings(lang)
         note = T(L["only_excerpt"]) + " " if st["excerpt_only"] else ""
@@ -247,6 +251,7 @@ def write(issue, issue_dir, out_path):
                    '<?xml version="1.0" encoding="utf-8"?>\n'
                    '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="%s">'
                    '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">%s</metadata>'
-                   '<manifest>%s</manifest><spine toc="ncx">%s</spine></package>'
-                   % (A(lang), "".join(meta), items, refs))
+                   '<manifest>%s</manifest><spine toc="ncx"%s>%s</spine></package>'
+                   % (A(lang), "".join(meta), items,
+                      ' page-progression-direction="rtl"' if i18n.direction(lang) == "rtl" else "", refs))
     os.replace(tmp, out_path)

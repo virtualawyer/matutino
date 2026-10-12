@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
-from . import VERSION, boxes, build, desk, epub, extract, feeds, fetch, images, render
+from . import VERSION, boxes, build, desk, epub, extract, feeds, fetch, i18n, images, render
 from . import sections as sec_mod
 from .build import Builder, tz, local_date
 from .db import DB, DEFAULTS
@@ -87,6 +87,8 @@ class App(object):
         self.password = os.environ.get("MATUTINO_PASSWORD", "") if password is None else password
         self.data_dir = data_dir
         self.epub_dir = epub_dir
+        # Drop-in language packs (<code>.json) in the data folder join the built-in ones.
+        i18n.load_dir(os.path.join(data_dir, "languages"))
         self.db = DB(os.path.join(data_dir, "matutino.db"))
         self.builder = Builder(self.db, data_dir, epub_dir, issues_dir)
         fetch.use_browser_ua(self.db.settings()["browser_ua"])

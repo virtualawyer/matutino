@@ -4,7 +4,9 @@ One page, rendered in the browser from /api/state. Actions POST JSON and
 then re-fetch the state rather than patching the page from responses.
 """
 
-from . import PROJECT_URL
+import html
+
+from . import PROJECT_URL, i18n
 from .render import CSS, MOON, THEME_JS, TOGGLE_JS
 
 DESK_CSS = r"""
@@ -149,7 +151,7 @@ xkcd | https://xkcd.com/rss.xml | headlines"></textarea>
     <label class="field"><span class="label">Stories per feed</span><input type="number" min="1" max="30" id="s_per_feed"></label>
     <label class="field"><span class="label">Look back (hours)</span><input type="number" min="6" max="336" id="s_lookback_hours"></label>
     <label class="field"><span class="label">Keep issues (days)</span><input type="number" min="1" max="365" id="s_keep_days"></label>
-    <label class="field"><span class="label">Language</span><input type="text" id="s_language" maxlength="8"></label>
+    <label class="field"><span class="label">Language</span><select id="s_language">__LANGS__</select></label>
   </div>
   <div class="grid" style="margin-top:14px">
     <label class="field" style="grid-column:1/-1"><span class="label">Weather for</span><input type="text" id="s_weather_place" placeholder="Town, Country (e.g. Lisbon, Portugal)"></label>
@@ -165,7 +167,7 @@ xkcd | https://xkcd.com/rss.xml | headlines"></textarea>
   <option>America/New_York</option><option>America/Chicago</option><option>America/Los_Angeles</option>
   <option>America/Mexico_City</option><option>America/Bogota</option><option>America/Buenos_Aires</option>
   <option>America/Costa_Rica</option><option>America/Puerto_Rico</option></datalist>
-  <p class="hint">Language sets the paper's own words (dates, labels, section names) and On this day: <code>en</code> or <code>es</code>. Stories print in their feeds' language.</p>
+  <p class="hint">Language sets the paper's own words (dates, labels, weather, section names) and On this day. Stories print in their feeds' language. To add a language, drop a pack into <code>languages/</code> in the data folder (see the README).</p>
 </section>
 
 <section class="box" style="border-bottom:0"><h2>Recent editions <span class="tools"><a class="link label" href="/archive">All editions &rarr;</a></span></h2><div class="issues" id="issues"></div></section>
@@ -232,7 +234,10 @@ function render(){
     if(empty.length)$('feeds').innerHTML+='<p class="missing">No feeds yet in: '+empty.map(esc).join(', ')+'.</p>';
   }
   if(!document.activeElement||!/^s_/.test(document.activeElement.id||'')){
-    Object.keys(S.settings).forEach(function(k){var el=$('s_'+k);if(!el)return;if(el.type==='checkbox')el.checked=!!S.settings[k];else el.value=S.settings[k]})}
+    Object.keys(S.settings).forEach(function(k){var el=$('s_'+k);if(!el)return;if(el.type==='checkbox')el.checked=!!S.settings[k];else{
+      if(el.tagName==='SELECT'&&![].some.call(el.options,function(o){return o.value===String(S.settings[k])})){
+        var o=document.createElement('option');o.value=o.textContent=S.settings[k];el.appendChild(o)}
+      el.value=S.settings[k]}})}
   $('kavita').innerHTML=S.epub_dir?(S.epub_ok?'EPUBs are filed in <code>'+esc(S.epub_dir+(S.kavita_folder?'/'+S.kavita_folder:''))+'</code> for Kavita'+
     (S.kavita_folder?' (this folder stays put if you rename the paper)':'')+'.':
     '<span class="bad">The Kavita folder <code>'+esc(S.epub_dir)+'</code> is not reachable; EPUBs stay on this server only.</span>'):
@@ -284,4 +289,6 @@ def page(version):
               if PROJECT_URL else "free software (AGPL)")
     return (PAGE.replace("__CSS__", CSS + DESK_CSS).replace("__THEME__", THEME_JS)
             .replace("__TOGGLE__", TOGGLE_JS).replace("__MOON__", MOON).replace("__VERSION__", version)
-            .replace("__SOURCE__", source))
+            .replace("__SOURCE__", source).replace("__LANGS__", "".join(
+                '<option value="%s">%s (%s)</option>' % (html.escape(c), html.escape(n), html.escape(c))
+                for c, n in i18n.languages())))

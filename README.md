@@ -50,9 +50,11 @@ to arrive each morning as clean articles, in the browser and as an EPUB.
 - **EPUB.** Each issue is also bound as an EPUB 3 book, with series metadata,
   so Kavita lists one series with an issue per day. The paper's download link
   works with any e-reader.
-- **English or Spanish.** The paper's own words (dates, labels, weather,
-  section names) follow the Language setting; stories print in their feeds'
-  language.
+- **In your language.** The paper's own words (dates, labels, weather,
+  section names) follow the Language setting: English, Spanish, German,
+  French, Portuguese, Italian, Swedish, Russian, Ukrainian, Bosnian, Turkish,
+  Arabic (laid out right to left) and Chinese, the languages Wikipedia
+  publishes *On this day* in. Stories print in their feeds' language.
 - **Small.** Python and a handful of libraries, one container, no database
   server; it runs comfortably in a container capped at 512 MB of memory.
 
@@ -118,10 +120,10 @@ Spanish names do the same jobs (Portada, Última hora, Clima, Variedades,
 Tiras cómicas, Opinión), and accents don't matter when matching.
 
 **Printed names.** A section's stored name is what its feeds and its job
-follow; what the paper prints can differ. On a Spanish paper the usual
-sections print in Spanish (World News as *Internacional*, Funnies as
-*Tiras cómicas*). To print any section under a name of your own, add it
-after an equals sign on the desk:
+follow; what the paper prints can differ. The usual sections print in the
+paper's language (on a Spanish paper World News is *Internacional* and Funnies
+*Tiras cómicas*; on a German one, *Welt* and *Comics*). To print any section
+under a name of your own, add it after an equals sign on the desk:
 
 ```text
 World News = Mundo
@@ -131,6 +133,22 @@ Local News = Nacionales
 The new name shows in the section menu, the headings, the story kickers and
 the EPUB, in older issues too. Feeds pasted under `# Mundo` land in that
 section.
+
+## Languages
+
+Pick the paper's language on the desk. It sets the dates, labels, weather and
+section names on the web paper and in the EPUB, and the edition of Wikipedia
+that *On this day* comes from. An Arabic paper is laid out right to left,
+while a story keeps its own feed's direction. The desk itself stays in English.
+
+To add a language (or change a word in one), put a pack in a `languages`
+folder inside the data folder, named for its code (`nl.json`, `pt.json`), and
+restart Matutino. Copy one of the packs in
+[`matutino/languages/`](matutino/languages/) as a start: it holds the native
+name, `dir` (`ltr` or `rtl`), the labels under `strings`, `days` (Monday
+first), `months`, and the date and time patterns. Labels you leave out, or
+whose `%s`/`%d` codes don't match the English ones, print in English. *On this
+day* stays in English for languages Wikipedia doesn't publish it in.
 
 ## Adding feeds
 
@@ -223,7 +241,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 | `epub.py` | EPUB 3 writer (+NCX) with series metadata |
 | `boxes.py` | weather (Open-Meteo) and On this day (Wikipedia) |
 | `sections.py` | section list, section jobs, name matching |
-| `i18n.py` | the paper's words in English and Spanish |
+| `i18n.py` | the paper's words: English and Spanish, plus the packs in `languages/` |
 | `render.py` | the paper: front page, articles, editions |
 | `desk.py` | the desk page |
 | `server.py` | HTTP, JSON API, scheduler |
@@ -246,11 +264,11 @@ why GitHub lists Claude as a contributor.
 
 How it's kept honest:
 
-- **84 automated tests** that need no network (a local test server plays every
+- **96 automated tests** that need no network (a local test server plays every
   outside site) run on every push: Python 3.10 to 3.13 with the libraries, and
   3.9 and 3.13 without them. They cover feed parsing, the HTML cleaner, the
   printing rules, the EPUB structure, the local-network guard, the password and
-  both languages; the pages' inline scripts are syntax-checked too.
+  every language; the pages' inline scripts are syntax-checked too.
 - **Real-world checks**: the feed packs were tested against the live sites, and
   bugs found that way (accented addresses, Brotli-only servers, malformed feeds)
   were fixed with a test that reproduces each one.
